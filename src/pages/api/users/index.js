@@ -5,12 +5,12 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]";
 
 export default async function handler(req, res) {
-  const session = await getServerSession(req, res, authOptions);
-  if (!session || session.user.role !== "CorporateAdmin") {
-    return res
-      .status(403)
-      .json({ error: "You do not have access to this resource" });
-  }
+  // const session = await getServerSession(req, res, authOptions);
+  // if (!session || session.user.role !== "CorporateAdmin") {
+  //   return res
+  //     .status(403)
+  //     .json({ error: "You do not have access to this resource" });
+  // }
 
   await connectDB();
 
