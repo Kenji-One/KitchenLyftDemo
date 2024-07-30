@@ -12,8 +12,8 @@ import {
   OutlinedInput,
 } from "@mui/material";
 import { useRouter } from "next/router";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "./api/auth/[...nextauth]";
+// import { getServerSession } from "next-auth/next";
+// import { authOptions } from "./api/auth/[...nextauth]";
 import CustomInput from "@/components/helpers/CustomInput";
 
 const AddUserPage = (props) => {
