@@ -1,8 +1,8 @@
 import connectDB from "@/utils/db";
 import User from "@/models/User";
 import bcrypt from "bcryptjs";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "../auth/[...nextauth]";
+// import { getServerSession } from "next-auth/next";
+// import { authOptions } from "../auth/[...nextauth]";
 
 export default async function handler(req, res) {
   await connectDB();
