@@ -2,6 +2,7 @@
 
 import Image from "next/legacy/image";
 import { useRouter } from "next/navigation";
+import { Box } from "@mui/material";
 
 const Header = () => {
   const router = useRouter();

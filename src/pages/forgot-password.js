@@ -92,8 +92,8 @@ const ForgotPasswordPage = () => {
             RESET PASSWORD
           </Typography>
           <Typography variant="body1" align="center" sx={{ mb: 3 }}>
-            We'll send a recovery link to the email which you are registered
-            with.
+            We&lsquo;ll send a recovery link to the email which you are
+            registered with.
           </Typography>
           {message && (
             <Alert severity="info" sx={{ mb: 3 }}>
