@@ -18,7 +18,6 @@ import CustomInput from "@/components/helpers/CustomInput";
 
 const AddUserPage = (props) => {
   const router = useRouter();
-  console.log("sesiaaaaaa:", props);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [email, setEmail] = useState("");
