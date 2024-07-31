@@ -12,8 +12,8 @@ import {
   OutlinedInput,
 } from "@mui/material";
 import { useRouter } from "next/router";
-// import { getServerSession } from "next-auth/next";
-// import { authOptions } from "./api/auth/[...nextauth]";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "./api/auth/[...nextauth]";
 import CustomInput from "@/components/helpers/CustomInput";
 
 const AddUserPage = (props) => {
@@ -136,22 +136,22 @@ const AddUserPage = (props) => {
   );
 };
 
-// export const getServerSideProps = async (context) => {
-//   const session = await getServerSession(context.req, context.res, authOptions);
-//   // console.log("Session:", session);
+export const getServerSideProps = async (context) => {
+  const session = await getServerSession(context.req, context.res, authOptions);
+  // console.log("Session:", session);
 
-//   if (!session || !session.user.role) {
-//     return {
-//       redirect: {
-//         destination: "/login",
-//         permanent: false,
-//       },
-//     };
-//   }
+  if (!session || !session.user.role) {
+    return {
+      redirect: {
+        destination: "/login",
+        permanent: false,
+      },
+    };
+  }
 
-//   return {
-//     props: { session: session },
-//   };
-// };
+  return {
+    props: { session: session },
+  };
+};
 
 export default AddUserPage;

@@ -1,17 +1,17 @@
 import connectDB from "@/utils/db";
 import User from "@/models/User";
 import bcrypt from "bcryptjs";
-// import { getServerSession } from "next-auth/next";
-// import { authOptions } from "../auth/[...nextauth]";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "../auth/[...nextauth]";
 
 export default async function handler(req, res) {
   await connectDB();
-  // const session = await getServerSession(req, res, authOptions);
-  // if (!session || session.user.role !== "CorporateAdmin") {
-  //   return res
-  //     .status(403)
-  //     .json({ error: "You do not have access to this resource" });
-  // }
+  const session = await getServerSession(req, res, authOptions);
+  if (!session || session.user.role !== "CorporateAdmin") {
+    return res
+      .status(403)
+      .json({ error: "You do not have access to this resource" });
+  }
 
   switch (req.method) {
     case "POST":

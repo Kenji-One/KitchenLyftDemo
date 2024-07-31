@@ -11,15 +11,17 @@ import {
   Link,
 } from "@mui/material";
 import CustomInput from "@/components/helpers/CustomInput";
+import Loader from "@/utils/Loader";
 
 const LoginPage = () => {
   const { data: session } = useSession();
   const router = useRouter();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    console.log("session:", session);
+    // console.log("session:", session);
     if (session && session.user && session.user.id) {
       router.push("/");
     }
@@ -27,10 +29,13 @@ const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
     await signIn("credentials", { redirect: false, username, password });
   };
   return (
     <>
+      <Loader open={loading} />
+
       <Box
         sx={{
           padding: "26px 0 26px 0",
