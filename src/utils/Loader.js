@@ -6,8 +6,8 @@ import { Backdrop, CircularProgress, Typography, Box } from "@mui/material";
 const Loader = ({ open, loaderText }) => {
   useEffect(() => {
     async function getLoader() {
-      const { cardio } = await import("ldrs");
-      cardio.register();
+      const { grid } = await import("ldrs");
+      grid.register();
     }
     getLoader();
   }, []);
@@ -17,7 +17,7 @@ const Loader = ({ open, loaderText }) => {
       open={open}
     >
       <Box className="flex flex-col items-center justify-center gap-6">
-        <l-cardio size="50" stroke="4" speed="2" color="#60B143"></l-cardio>
+        <l-grid size="50" stroke="4" speed="2" color="#60B143"></l-grid>
         {/* <CircularProgress color="inherit" />
         {loaderText && (
           <Typography
