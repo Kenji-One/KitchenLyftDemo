@@ -36,6 +36,7 @@ import RequestQuoteIcon from "@mui/icons-material/RequestQuote";
 import PersonIcon from "@mui/icons-material/Person";
 import LogoutIcon from "@mui/icons-material/Logout";
 import GroupIcon from "@mui/icons-material/Group";
+import Loader from "@/utils/Loader";
 
 const Dashboard = ({ session2 }) => {
   const router = useRouter();
@@ -46,6 +47,7 @@ const Dashboard = ({ session2 }) => {
   const [quote, setQuote] = useState(null);
   const [chat, setChat] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (event, newValue) => {
     selectedProject !== null && setSelectedProject(null);
@@ -77,17 +79,34 @@ const Dashboard = ({ session2 }) => {
 
   useEffect(() => {
     const fetchProjects = async () => {
-      const response = await fetch("/api/projects");
-      const projects = await response.json();
+      try {
+        setLoading(true);
+        const response = await fetch("/api/projects");
+        const projects = await response.json();
 
-      const projectQuotes = await Promise.all(
-        projects.map(async (project) => {
-          const response = await fetch(`/api/quotes?projectId=${project._id}`);
-          const quote = await response.json();
-          return { ...project, quote: quote.price };
-        })
-      );
-      setProjects(projectQuotes);
+        const projectQuotes = await Promise.all(
+          projects.map(async (project) => {
+            try {
+              const response = await fetch(
+                `/api/quotes?projectId=${project._id}`
+              );
+              const quote = await response.json();
+              return { ...project, quote: quote.price };
+            } catch (error) {
+              console.error(
+                `Failed to fetch quote for project ${project._id}`,
+                error
+              );
+              return { ...project, quote: "N/A" }; // or handle as needed
+            }
+          })
+        );
+        setProjects(projectQuotes);
+        setLoading(false);
+      } catch (error) {
+        console.error("Failed to fetch projects", error);
+        setLoading(false);
+      }
     };
     fetchProjects();
   }, []);
@@ -95,39 +114,72 @@ const Dashboard = ({ session2 }) => {
   useEffect(() => {
     if (session2.user.role === "CorporateAdmin") {
       const fetchUsers = async () => {
-        const response = await fetch("/api/users");
-        const data = await response.json();
-        setUsers(data);
+        try {
+          setLoading(true);
+          const response = await fetch("/api/users");
+          const data = await response.json();
+          setUsers(data);
+          setLoading(false);
+        } catch (error) {
+          setLoading(false);
+          console.error("Failed to fetch users", error);
+        }
       };
       fetchUsers();
     }
   }, [session2.user.role]);
 
   const handleProjectClick = async (projectId) => {
-    const response = await fetch(`/api/projects?id=${projectId}`);
-    const data = await response.json();
-    setSelectedProject(data.project);
-    setQuote(data.quote);
-    setChat(data.chat); // Fetch and set the chat data
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/projects?id=${projectId}`);
+      const data = await response.json();
+      setSelectedProject(data.project);
+      setQuote(data.quote);
+      setChat(data.chat); // Fetch and set the chat data
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      console.error(
+        `Failed to fetch project details for project ${projectId}`,
+        error
+      );
+    }
   };
 
   const handleRemoveUser = async (userId) => {
-    await fetch(`/api/users?id=${userId}`, {
-      method: "DELETE",
-    });
-    setUsers(users.filter((user) => user._id !== userId));
+    try {
+      setLoading(true);
+
+      await fetch(`/api/users?id=${userId}`, {
+        method: "DELETE",
+      });
+      setUsers(users.filter((user) => user._id !== userId));
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+
+      console.error(`Failed to remove user ${userId}`, error);
+    }
   };
 
   const handleAddUser = async (newUser) => {
-    const response = await fetch("/api/users", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(newUser),
-    });
-    const data = await response.json();
-    setUsers([...users, data]);
+    try {
+      setLoading(true);
+      const response = await fetch("/api/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newUser),
+      });
+      const data = await response.json();
+      setUsers([...users, data]);
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      console.error("Failed to add new user", error);
+    }
   };
 
   const open = Boolean(anchorEl);
@@ -135,6 +187,8 @@ const Dashboard = ({ session2 }) => {
 
   return (
     <>
+      <Loader open={loading} />
+
       <AppBar
         position="static"
         sx={{
