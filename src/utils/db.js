@@ -8,20 +8,24 @@ if (!MONGODB_URI) {
   );
 }
 
+let cached = global.mongoose;
+
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null };
+}
+
 const connectDB = async () => {
-  if (mongoose.connections[0].readyState) {
-    return mongoose.connection.db;
+  if (cached.conn) {
+    return cached.conn;
   }
 
-  try {
-    console.log("Connecting to Mongo!");
-    await mongoose.connect(MONGODB_URI);
-    console.log(`MongoDB Connected`);
-    return mongoose.connection.db;
-  } catch (err) {
-    console.error("Cannot connect to the database!", err);
-    // process.exit(1);
+  if (!cached.promise) {
+    cached.promise = mongoose.connect(MONGODB_URI).then((mongoose) => {
+      return mongoose;
+    });
   }
+  cached.conn = await cached.promise;
+  return cached.conn;
 };
 
 export default connectDB;
