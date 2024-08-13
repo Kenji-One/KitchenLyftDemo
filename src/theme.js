@@ -15,6 +15,7 @@ const theme = createTheme({
       fontSize: "24px",
       fontWeight: "400",
       textTransform: "uppercase",
+      color: "#323740",
     },
     h3: {
       fontFamily: "Paytone One, sans-serif",
@@ -25,6 +26,12 @@ const theme = createTheme({
       fontFamily: "Paytone One, sans-serif",
       fontSize: "20px",
       fontWeight: "400",
+      color: "#323740",
+    },
+    h6: {
+      fontSize: "16px",
+      fontWeight: "800",
+      color: "#323740",
     },
     body1: {
       fontSize: "1rem",
@@ -102,6 +109,20 @@ const theme = createTheme({
             color: "#323740",
             "&:hover": {
               backgroundColor: "#d8d8d8",
+            },
+          },
+        },
+        {
+          props: { variant: "btnGray" },
+          style: {
+            fontSize: "16px",
+            margin: "auto",
+            marginBottom: "16px",
+            backgroundColor: "rgba(50, 55, 64, 0.102)",
+            padding: "16px 24px",
+            color: "#323740",
+            "&:hover": {
+              backgroundColor: "rgba(50, 55, 64, 0.2)",
             },
           },
         },

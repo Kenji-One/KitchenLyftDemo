@@ -30,6 +30,7 @@ const handler = async (req, res) => {
 
     case "POST":
       try {
+        console.log(req.body);
         const newQuote = new Quote({ ...req.body, user_id: session.user.id });
         await newQuote.save();
         res.status(201).json(newQuote);

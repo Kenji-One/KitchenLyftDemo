@@ -20,14 +20,16 @@ const ProjectDetails = ({
   quote,
   chat,
   setSelectedProject,
-  handleChange,
+  letsGenerateQuote,
 }) => {
   const quoteCategories = [
     { name: "Doors", data: quote?.doors },
     { name: "Drawer Fronts", data: quote?.drawerFronts },
     { name: "Side Panels", data: quote?.sidePanels },
     { name: "Kick Plates", data: quote?.kickPlates },
+    { name: "Trim", data: quote?.trim },
     { name: "Handles", data: quote?.handles },
+    { name: "Hinges", data: quote?.handles },
     { name: "Extras", data: quote?.extras },
   ];
   const handleSend = async (text) => {
@@ -117,7 +119,7 @@ const ProjectDetails = ({
             </Button>
             <Button
               variant="contained"
-              onClick={() => handleChange(null, 4)}
+              onClick={() => letsGenerateQuote()}
               sx={{
                 backgroundColor: "#60B143",
                 "&:hover": {
@@ -237,8 +239,8 @@ const ProjectDetails = ({
                 }}
               />
             </Box>
-            <Box sx={{ display: "flex", gap: 1, mt: 1, flexWrap: "wrap" }}>
-              {project.dueDate && (
+            {project.dueDate && (
+              <Box sx={{ display: "flex", gap: 1, mt: 1, flexWrap: "wrap" }}>
                 <Chip
                   label={"DL: " + project.dueDate}
                   sx={{
@@ -258,8 +260,8 @@ const ProjectDetails = ({
                     DL: {project.dueDate}
                   </Typography>
                 </Chip>
-              )}
-            </Box>
+              </Box>
+            )}
           </Box>
           <Divider />
 
@@ -312,7 +314,11 @@ const ProjectDetails = ({
                         </Typography>
                         {category.data.map((item, index) => (
                           <Typography key={index} variant="detailsText">
-                            {item.material}, {item.size}, {item.quantity} pcs
+                            {item?.material}
+                            {item?.sku},{" "}
+                            {item?.width &&
+                              item?.width + "X" + item?.height + ","}{" "}
+                            {item?.quantity} pcs
                           </Typography>
                         ))}
                       </Box>

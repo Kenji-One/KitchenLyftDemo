@@ -44,6 +44,7 @@ const Dashboard = ({ session2 }) => {
   const [projects, setProjects] = useState([]);
   const [users, setUsers] = useState([]);
   const [selectedProject, setSelectedProject] = useState(null);
+  const [thereIsClickForQoute, setThereIsClickForQoute] = useState(false);
   const [quote, setQuote] = useState(null);
   const [chat, setChat] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -52,6 +53,9 @@ const Dashboard = ({ session2 }) => {
   const handleChange = (event, newValue) => {
     selectedProject !== null && setSelectedProject(null);
     setValue(newValue);
+  };
+  const letsGenerateQuote = (event, newValue) => {
+    setThereIsClickForQoute(true);
   };
 
   const handleAddProject = () => {
@@ -68,7 +72,7 @@ const Dashboard = ({ session2 }) => {
 
   const handleProfile = () => {
     selectedProject !== null && setSelectedProject(null);
-    setValue(6);
+    setValue(5);
     setAnchorEl(null);
   };
 
@@ -202,11 +206,9 @@ const Dashboard = ({ session2 }) => {
       >
         <Toolbar sx={{ justifyContent: "space-between", gap: "32px" }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: "32px" }}>
-            <Image
-              src={"/logo-kitchen.png"}
-              width={"139px"}
-              height={"15px"}
-              alt="logo"
+            <img
+              src={"/logo 1.svg"}
+              alt="Logo of the Company"
               className="kitchen-logo"
             />
             <span
@@ -276,14 +278,6 @@ const Dashboard = ({ session2 }) => {
                 label="Messages"
               />
 
-              <Tab
-                icon={
-                  <RequestQuoteIcon
-                    sx={{ color: "#323740", margin: "0 !important" }}
-                  />
-                }
-                label="Generate Quotes"
-              />
               {session2.user.role === "CorporateAdmin" && (
                 <Tab
                   icon={
@@ -345,18 +339,27 @@ const Dashboard = ({ session2 }) => {
           paddingRight: selectedProject ? "0 !important" : "",
           paddingTop: selectedProject ? "0 !important" : "",
           paddingBottom: selectedProject ? "0 !important" : "",
-          height: selectedProject ? "calc(100vh - 72px) !important" : "",
+          height:
+            selectedProject && !thereIsClickForQoute
+              ? "calc(100vh - 72px) !important"
+              : "",
         }}
       >
         <Box sx={{ height: "100%" }}>
           {selectedProject ? (
-            <ProjectDetails
-              project={selectedProject}
-              quote={quote}
-              chat={chat}
-              setSelectedProject={setSelectedProject}
-              handleChange={handleChange}
-            />
+            <>
+              {!thereIsClickForQoute ? (
+                <ProjectDetails
+                  project={selectedProject}
+                  quote={quote}
+                  chat={chat}
+                  setSelectedProject={setSelectedProject}
+                  letsGenerateQuote={letsGenerateQuote}
+                />
+              ) : (
+                <GenerateQuoteForm selectedProject={selectedProject} />
+              )}
+            </>
           ) : (
             <>
               {value === 0 && (
@@ -375,15 +378,15 @@ const Dashboard = ({ session2 }) => {
               )}
               {value === 2 && <Orders />}
               {value === 3 && <Messages />}
-              {value === 4 && <GenerateQuoteForm projects={projects} />}
-              {value === 5 && (
+
+              {value === 4 && (
                 <UserTable
                   users={users}
                   handleRemoveUser={handleRemoveUser}
                   handleAddUser={handleAddUser}
                 />
               )}
-              {value === 6 && <Profile />}
+              {value === 5 && <Profile />}
             </>
           )}
         </Box>

@@ -16,14 +16,13 @@ const DetailsCard = ({ BoxSX, headingText, children }) => {
       }}
     >
       <Typography
-        variant="h5"
+        variant="detailsHeading"
         sx={{
           pb: "12px",
           borderBottom: 1,
+          color: "#13131D",
           borderColor: "rgba(19, 19, 29, 0.102)",
           mb: "24px",
-          fontSize: "14px",
-          textTransform: "uppercase",
         }}
       >
         {headingText}

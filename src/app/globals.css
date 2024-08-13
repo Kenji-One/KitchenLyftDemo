@@ -17,7 +17,8 @@ a {
 }
 
 .kitchen-logo {
-  max-width: 139px !important;
-  height: 15px !important;
+  width: 100%;
+  max-width: 191px !important;
+  height: 34px !important;
   object-fit: cover;
 }

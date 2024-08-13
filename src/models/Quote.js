@@ -1,5 +1,17 @@
 import mongoose from "mongoose";
 
+const itemSchema = {
+  material: String,
+  width: String,
+  height: String,
+  quantity: Number,
+};
+
+const handleSchema = {
+  sku: String,
+  quantity: Number,
+};
+
 const quoteSchema = new mongoose.Schema({
   projectId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -10,46 +22,53 @@ const quoteSchema = new mongoose.Schema({
   price: String,
   doors: [
     {
-      material: String,
-      size: String,
-      quantity: Number,
+      type: itemSchema,
+      _id: false,
     },
   ],
   drawerFronts: [
     {
-      material: String,
-      size: String,
-      quantity: Number,
+      type: itemSchema,
+      _id: false,
     },
   ],
   sidePanels: [
     {
-      material: String,
-      size: String,
-      quantity: Number,
+      type: itemSchema,
+      _id: false,
     },
   ],
   kickPlates: [
     {
-      material: String,
-      size: String,
-      quantity: Number,
+      type: itemSchema,
+      _id: false,
+    },
+  ],
+  trim: [
+    {
+      type: itemSchema,
+      _id: false,
     },
   ],
   handles: [
     {
-      material: String,
-      size: String,
-      quantity: Number,
+      type: handleSchema,
+      _id: false,
+    },
+  ],
+  hinges: [
+    {
+      type: handleSchema,
+      _id: false,
     },
   ],
   extras: [
     {
-      material: String,
-      size: String,
-      quantity: Number,
+      type: handleSchema,
+      _id: false,
     },
   ],
+
   user_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",

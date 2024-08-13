@@ -167,6 +167,16 @@ const Profile = () => {
                 handleChange={handleProfileChange}
                 placeholder="Enter your name"
                 inputBoxSX={{ mb: "16px" }}
+                inputSX={{
+                  "& input": {
+                    height: "51px",
+                    borderRadius: "4px",
+                    backgroundColor: "#FFFFFF",
+                  },
+                  "& fieldset": {
+                    border: "none",
+                  },
+                }}
               />
               <CustomInput
                 type="email"
@@ -175,21 +185,23 @@ const Profile = () => {
                 handleChange={handleProfileChange}
                 placeholder="Enter your email"
                 inputBoxSX={{ mb: "16px" }}
-              />
-              {/* <Box sx={{ width: "100%", textAlign: "center" }}> */}
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                sx={{
-                  mt: "auto",
-                  mx: "auto",
-                  backgroundColor: "rgba(50, 55, 64, 0.102)",
-                  color: "#323740",
-                  "&:hover": {
-                    backgroundColor: "rgba(50, 55, 64, 0.2)",
+                inputSX={{
+                  "& input": {
+                    height: "51px",
+                    borderRadius: "4px",
+                    backgroundColor: "#FFFFFF",
+                  },
+                  "& fieldset": {
+                    border: "none",
                   },
                 }}
+              />
+              {/* <Box sx={{ width: "100%", textAlign: "center" }}> */}
+
+              <Button
+                variant="btnGray"
+                component="label"
+                sx={{ marginBottom: "0" }}
               >
                 Save changes
               </Button>
@@ -209,32 +221,19 @@ const Profile = () => {
               }}
             />
             <Box>
-              <Button
-                variant="contained"
-                component="label"
-                color="primary"
-                fullWidth
-                sx={{
-                  mt: "auto",
-                  mx: "auto",
-                  mb: "16px",
-                  backgroundColor: "rgba(50, 55, 64, 0.102)",
-                  color: "#323740",
-                  "&:hover": {
-                    backgroundColor: "rgba(50, 55, 64, 0.2)",
-                  },
-                }}
-              >
+              <Button variant="btnGray" component="label" fullWidth>
                 Upload Image
                 <input type="file" hidden onChange={handleImageChange} />
               </Button>
               <Button
                 variant="contained"
-                startIcon={<DeleteIcon />}
+                // startIcon={<DeleteIcon />}
                 fullWidth
                 sx={{
+                  fontSize: "16px",
                   mt: "auto",
                   mx: "auto",
+                  padding: "16px 24px",
                   backgroundColor: "rgba(241, 86, 66, 0.102)",
                   color: "#F15642",
                   "&:hover": {
@@ -250,7 +249,11 @@ const Profile = () => {
             <Box
               component="form"
               onSubmit={handlePasswordSubmit}
-              sx={{ "& .MuiBox-root.css-4ffsol": { margin: "0" } }}
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                "& .MuiBox-root.css-4ffsol": { margin: "0" },
+              }}
             >
               <CustomInput
                 type="password"
@@ -259,6 +262,16 @@ const Profile = () => {
                 handleChange={handlePasswordChange}
                 placeholder="Enter current password"
                 inputBoxSX={{ mb: "16px" }}
+                inputSX={{
+                  "& input": {
+                    height: "51px",
+                    borderRadius: "4px",
+                    backgroundColor: "#FFFFFF",
+                  },
+                  "& fieldset": {
+                    border: "none",
+                  },
+                }}
               />
               <CustomInput
                 type="password"
@@ -267,6 +280,16 @@ const Profile = () => {
                 handleChange={handlePasswordChange}
                 placeholder="Enter new password"
                 inputBoxSX={{ mb: "16px" }}
+                inputSX={{
+                  "& input": {
+                    height: "51px",
+                    borderRadius: "4px",
+                    backgroundColor: "#FFFFFF",
+                  },
+                  "& fieldset": {
+                    border: "none",
+                  },
+                }}
               />
               <CustomInput
                 type="password"
@@ -275,20 +298,21 @@ const Profile = () => {
                 handleChange={handlePasswordChange}
                 placeholder="Confirm new password"
                 inputBoxSX={{ mb: "16px" }}
-              />
-              <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                sx={{
-                  display: "flex",
-                  mx: "auto",
-                  backgroundColor: "rgba(50, 55, 64, 0.102)",
-                  color: "#323740",
-                  "&:hover": {
-                    backgroundColor: "rgba(50, 55, 64, 0.2)",
+                inputSX={{
+                  "& input": {
+                    height: "51px",
+                    borderRadius: "4px",
+                    backgroundColor: "#FFFFFF",
+                  },
+                  "& fieldset": {
+                    border: "none",
                   },
                 }}
+              />
+              <Button
+                variant="btnGray"
+                component="label"
+                sx={{ marginBottom: "0", marginTop: "8px" }}
               >
                 Save changes
               </Button>

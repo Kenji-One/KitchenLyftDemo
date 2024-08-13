@@ -10,6 +10,7 @@ const CustomInput = ({
   inputBoxClasses = "",
   inputProps = {}, // Additional input props
   inputBoxSX = {},
+  inputSX = {},
   available,
   warning,
   error,
@@ -45,7 +46,7 @@ const CustomInput = ({
           name={inputName}
           value={value || ""}
           onChange={handleChange}
-          sx={{ width: "100%", paddingLeft: 0 }}
+          sx={{ width: "100%", paddingLeft: 0, ...inputSX }}
           InputProps={inputProps}
           multiline
           error={error}
@@ -55,6 +56,7 @@ const CustomInput = ({
         <TextField
           type={type}
           variant="outlined"
+          sx={{ ...inputSX }}
           placeholder={placeholder}
           fullWidth
           InputLabelProps={{
