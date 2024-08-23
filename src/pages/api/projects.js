@@ -67,16 +67,6 @@ const handler = async (req, res) => {
         let imageUrls = [];
         if (req.files && req.files.length > 0) {
           try {
-            // const result = await new Promise((resolve, reject) => {
-            //   const uploadStream = cloudinary.uploader.upload_stream(
-            //     (error, result) => {
-            //       if (error) reject(error);
-            //       resolve(result);
-            //     }
-            //   );
-            //   uploadStream.end(req.file.buffer);
-            // });
-            // imageUrl = result.secure_url;
             const uploadPromises = req.files.map((file) => {
               return new Promise((resolve, reject) => {
                 const uploadStream = cloudinary.uploader.upload_stream(
@@ -106,12 +96,12 @@ const handler = async (req, res) => {
 
           const newProject = new Project({
             title,
-            image: imageUrls[0] || null,
-            additionalImages: imageUrls.slice(1),
+            images: imageUrls,
             description: req.body.description,
             location: req.body.location,
             priority: req.body.priority,
-            status: req.body.status,
+            startDate: req.body.startDate,
+            // status: req.body.status,
             user_id: session.user.id,
           });
 
@@ -141,8 +131,21 @@ const handler = async (req, res) => {
           return res.status(500).json({ message: "Unknown error", error: err });
         }
 
-        const { id, title, description, location, priority } = req.body;
+        const {
+          id,
+          description,
+          location,
+          priority,
+          startDate,
+          status,
+          removedImages,
+          existingImages,
+        } = req.body;
+
+        const removedImagesArray = JSON.parse(removedImages || "[]");
+        const existingImagesArray = JSON.parse(existingImages || "[]");
         let imageUrls = [];
+        // console.log("files:", req);
         if (req.files && req.files.length > 0) {
           try {
             const uploadPromises = req.files.map((file) => {
@@ -174,34 +177,39 @@ const handler = async (req, res) => {
             return res.status(403).json({ message: "Forbidden" });
           }
 
-          if (imageUrls.length > 0) {
-            // Remove existing images from Cloudinary
-            if (project.image) {
-              const publicId = project.image.split("/").pop().split(".")[0];
-              await cloudinary.uploader.destroy(publicId);
-            }
-            if (
-              project.additionalImages &&
-              project.additionalImages.length > 0
-            ) {
-              const deletePromises = project.additionalImages.map((imgUrl) => {
-                const publicId = imgUrl.split("/").pop().split(".")[0];
-                return cloudinary.uploader.destroy(publicId);
-              });
-              await Promise.all(deletePromises);
-            }
-            project.image = imageUrls[0] || null;
-            project.additionalImages = imageUrls.slice(1);
+          // Update the title if the location has changed
+          if (location && location !== project.location) {
+            const titleParts = project.title.split(" ");
+            const kitchenNumber = titleParts[titleParts.length - 1];
+            project.title = `${location} Kitchen ${kitchenNumber}`;
           }
 
-          project.title = title;
-          project.description = description;
-          project.location = location;
-          project.priority = priority;
+          // Remove additional images from Cloudinary and the database
+          if (removedImagesArray.length > 0) {
+            const deletePromises = removedImagesArray.map((imgUrl) => {
+              const publicId = imgUrl.split("/").pop().split(".")[0];
+              return cloudinary.uploader.destroy(publicId);
+            });
+            await Promise.all(deletePromises);
+
+            project.images = project.images.filter(
+              (image) => !removedImagesArray.includes(image)
+            );
+          }
+
+          // Add new images
+          project.images = [...existingImagesArray, ...imageUrls];
+
+          project.description = description ?? project.description;
+          project.location = location ?? project.location;
+          project.priority = priority ?? project.priority;
+          project.status = status ?? project.status;
+          project.startDate = startDate ?? project.startDate;
 
           const updatedProject = await project.save();
           res.status(200).json(updatedProject);
         } catch (error) {
+          console.error("Error updating project:", error);
           res.status(500).json({ message: "Error updating project", error });
         }
       });
@@ -218,12 +226,8 @@ const handler = async (req, res) => {
         }
 
         // Remove the images from Cloudinary if they exist
-        if (project.image) {
-          const publicId = project.image.split("/").pop().split(".")[0]; // Extract publicId from URL
-          await cloudinary.uploader.destroy(publicId);
-        }
-        if (project.additionalImages && project.additionalImages.length > 0) {
-          const deletePromises = project.additionalImages.map((imgUrl) => {
+        if (project.images && project.images.length > 0) {
+          const deletePromises = project.images.map((imgUrl) => {
             const publicId = imgUrl.split("/").pop().split(".")[0]; // Extract publicId from URL
             return cloudinary.uploader.destroy(publicId);
           });
@@ -237,7 +241,7 @@ const handler = async (req, res) => {
         await Quote.findOneAndDelete({ projectId: id });
 
         await project.remove();
-        res.status(200).json({ message: "Project and its image deleted" });
+        res.status(200).json({ message: "Project and its images deleted" });
       } catch (error) {
         res.status(500).json({ message: "Error deleting project", error });
       }

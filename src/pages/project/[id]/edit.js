@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/router";
 import {
   Box,
   Button,
@@ -18,72 +18,119 @@ import CustomInput from "@/components/helpers/CustomInput";
 import Loader from "@/utils/Loader";
 import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/pages/api/auth/[...nextauth]";
 
-const CreateProject = () => {
+const EditProject = ({ session2 }) => {
+  const router = useRouter();
+  const { id } = router.query;
+  console.log(session2);
   const [images, setImages] = useState([]);
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
   const [priority, setPriority] = useState("");
+  const [status, setStatus] = useState("");
   const [startDate, setStartDate] = useState(null);
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [removedImages, setRemovedImages] = useState([]);
 
-  const router = useRouter();
+  useEffect(() => {
+    if (!id) return;
+    setLoading(true);
+    fetch(`/api/projects/${id}`)
+      .then((res) => res.json())
+      .then((data) => {
+        const project = data.project;
+        setDescription(project.description);
+        setLocation(project.location);
+        setPriority(project.priority);
+        setStatus(project.status);
+        // Safely parse the startDate date
+        const projectstartDate = project.startDate
+          ? new Date(project.startDate)
+          : null;
+        // Check if the date is valid before setting
+        if (!isNaN(projectstartDate)) {
+          setStartDate(projectstartDate);
+        }
+        setImages(project.images || []);
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch project", err);
+        setLoading(false);
+      });
+  }, [id]);
+
+  const handleImageChange = (e) => {
+    const files = Array.from(e.target.files);
+    setImages((prevImages) => [
+      ...prevImages,
+      ...files.map((file) => ({ file })), // Store only the file object
+    ]);
+  };
+
+  const handleRemoveImage = (image) => {
+    setRemovedImages((prev) => [...prev, image]);
+    setImages((prev) => prev.filter((img) => img !== image));
+  };
 
   const validateForm = () => {
     const newErrors = {};
     if (!description) newErrors.description = "Notes is required";
     if (!location) newErrors.location = "Location is required";
     if (!priority) newErrors.priority = "Priority is required";
-    if (!startDate) newErrors.startDate = "StartDate is required";
+    if (!startDate) newErrors.startDate = "Start Date is required";
     return newErrors;
   };
 
-  const handleImageChange = (e) => {
-    const files = Array.from(e.target.files);
-    setImages((prevImages) => [...prevImages, ...files]);
-  };
-
-  const handleRemoveImage = (index) => {
-    setImages((prevImages) => prevImages.filter((_, i) => i !== index));
-  };
-
   const handleSubmit = async (e) => {
-    setLoading(true);
     e.preventDefault();
     const validationErrors = validateForm();
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
-      setLoading(false);
       return;
     }
+
+    setLoading(true);
     const formData = new FormData();
-    images.forEach((image) => {
-      formData.append("images", image);
+
+    // Separate new images (files) from existing ones (URLs)
+    const newImages = images.filter((image) => image.file); // Filter out any images without a `file` property
+    const existingImages = images.filter((image) => typeof image === "string");
+
+    newImages.forEach((imageObj) => {
+      formData.append("images", imageObj.file); // Append the actual file
     });
+
+    formData.append("id", id);
     formData.append("description", description);
     formData.append("location", location);
     formData.append("priority", priority);
-    // formData.append("status", status);
+    formData.append("status", status);
     formData.append("startDate", startDate.toISOString());
-    console.log(" startDate.toISOString():", startDate.toISOString());
-    // const response = await fetch("/api/projects", {
-    //   method: "POST",
-    //   body: formData,
-    // });
+    formData.append("existingImages", JSON.stringify(existingImages));
+    formData.append("removedImages", JSON.stringify(removedImages));
 
-    // if (response.ok) {
-    //   setLoading(false);
-    //   router.push("/");
-    // } else {
-    //   console.error("Failed to create project");
-    //   setLoading(false);
-    // }
+    const response = await fetch(`/api/projects`, {
+      method: "PUT",
+      body: formData,
+    });
+
+    if (response.ok) {
+      setLoading(false);
+      router.push(`/project/${id}/edit`);
+    } else {
+      console.error("Failed to update project");
+      setLoading(false);
+    }
   };
 
   const handleGoBack = () => {
-    router.push("/");
+    router.back();
   };
+
   return (
     <>
       <Loader open={loading} />
@@ -105,13 +152,13 @@ const CreateProject = () => {
             variant="h5"
             sx={{ fontSize: "24px", textTransform: "uppercase" }}
           >
-            Create a Project
+            Edit Project
           </Typography>
           <Button
             type="submit"
             variant="greenBtn"
             color="primary"
-            disabled={!description || !priority || !location || !startDate}
+            disabled={!description || !priority || !location}
           >
             Save
           </Button>
@@ -134,11 +181,16 @@ const CreateProject = () => {
                   sx={{
                     position: "relative",
                     display: "inline-block",
-                    gridColumn: index === 0 && "1/-1",
+                    gridColumn: index === 0 && "1/-1", // Main image takes full width
                   }}
                 >
                   <img
-                    src={URL.createObjectURL(image)}
+                    src={
+                      typeof image === "string"
+                        ? image
+                        : URL.createObjectURL(image.file)
+                    }
+                    // src={image}
                     alt={`preview-${index}`}
                     style={{
                       width: "100%",
@@ -149,7 +201,7 @@ const CreateProject = () => {
                   />
                   <IconButton
                     size="small"
-                    onClick={() => handleRemoveImage(index)}
+                    onClick={() => handleRemoveImage(image)}
                     sx={{
                       position: "absolute",
                       top: 0,
@@ -215,12 +267,39 @@ const CreateProject = () => {
                     color: "rgba(50, 55, 64, 0.6)",
                   }}
                 >
-                  max 3MBs
+                  max 100MBs
                 </Typography>
               </Box>
             </Box>
           </Box>
           <Box>
+            {session2.user.role === "CorporateAdmin" && (
+              <FormControl fullWidth sx={{ mb: "24px" }}>
+                {/* <InputLabel>Location</InputLabel> */}
+                <Typography variant="inputHeading">Status</Typography>
+                <Select
+                  sx={{ height: "44px" }}
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  labelId="role-label"
+                  name={"location"}
+                  displayEmpty
+                  input={<OutlinedInput />}
+                  inputProps={{ "aria-label": "Without label" }}
+                >
+                  <MenuItem disabled value="">
+                    Select Status
+                  </MenuItem>
+                  <MenuItem value="In Progress">In Progress</MenuItem>
+                  <MenuItem value="Awaiting Payment">Awaiting Payment</MenuItem>
+                  <MenuItem value="Paid">Paid</MenuItem>
+                  <MenuItem value="In Production">In Production</MenuItem>
+                  <MenuItem value="Shipped">Shipped</MenuItem>
+                  <MenuItem value="Order Received">Order Received</MenuItem>
+                  <MenuItem value="Completed">Completed</MenuItem>
+                </Select>
+              </FormControl>
+            )}
             <FormControl fullWidth sx={{ mb: "24px" }}>
               {/* <InputLabel>Location</InputLabel> */}
               <Typography variant="inputHeading">Location</Typography>
@@ -324,4 +403,25 @@ const CreateProject = () => {
   );
 };
 
-export default CreateProject;
+export const getServerSideProps = async (context) => {
+  const session2 = await getServerSession(
+    context.req,
+    context.res,
+    authOptions
+  );
+
+  if (!session2 || !session2.user.role) {
+    return {
+      redirect: {
+        destination: "/login",
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: { session2 },
+  };
+};
+
+export default EditProject;

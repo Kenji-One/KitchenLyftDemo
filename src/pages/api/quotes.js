@@ -30,11 +30,20 @@ const handler = async (req, res) => {
 
     case "POST":
       try {
-        console.log(req.body);
+        // Check if there is an existing quote for the project
+        const existingQuote = await Quote.findOne({
+          projectId: req.body.projectId,
+        });
+        if (existingQuote) {
+          // Delete the existing quote if it exists
+          await Quote.deleteOne({ _id: existingQuote._id });
+        }
+
         const newQuote = new Quote({ ...req.body, user_id: session.user.id });
         await newQuote.save();
         res.status(201).json(newQuote);
       } catch (error) {
+        console.error("Error in creating or replacing a quote:", error); // Improved error logging
         res.status(500).json({ message: "Error creating quote", error });
       }
       break;

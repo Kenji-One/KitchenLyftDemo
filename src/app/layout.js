@@ -37,6 +37,7 @@ const Layout = ({ children }) => {
           }}
         >
           {/* {!isLoginPage && !isForgotPage && !isResetPage && <Header />} */}
+
           <Box sx={{ flex: 1 }}>{children}</Box>
           {/* {!isLoginPage && !isForgotPage && !isResetPage && <Footer />} */}
         </Box>

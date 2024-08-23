@@ -10,7 +10,6 @@ import {
   MenuItem,
   FormControl,
   OutlinedInput,
-  Grid,
   IconButton,
   Alert,
 } from "@mui/material";
@@ -18,41 +17,260 @@ import CustomInput from "@/components/helpers/CustomInput";
 import CloseIcon from "@mui/icons-material/Close";
 import Loader from "@/utils/Loader";
 
-// const pricing = {
-//   doors: {
-//     materials: { wood: 50, metal: 100, plastic: 30 },
-//     sizes: { small: 20, medium: 40, large: 60 },
-//   },
-//   drawerFronts: {
-//     materials: { wood: 40, metal: 80, plastic: 25 },
-//     sizes: { small: 15, medium: 30, large: 45 },
-//   },
-//   sidePanels: {
-//     materials: { wood: 60, metal: 120, plastic: 40 },
-//     sizes: { small: 25, medium: 50, large: 75 },
-//   },
-//   kickPlates: {
-//     materials: { wood: 30, metal: 60, plastic: 20 },
-//     sizes: { small: 10, medium: 20, large: 30 },
-//   },
-//   trim: {
-//     materials: { brass: 20, stainlessSteel: 40, plastic: 10 },
-//     sizes: { small: 8, medium: 16, large: 24 },
-//   },
-//   handles: {
-//     materials: { brass: 20, stainlessSteel: 40, plastic: 10 },
-//     sizes: { small: 8, medium: 16, large: 24 },
-//   },
-//   hinges: {
-//     materials: { brass: 20, stainlessSteel: 40, plastic: 10 },
-//     sizes: { small: 8, medium: 16, large: 24 },
-//   },
-// };
-
 const marketPrices = {
   melamine: 30,
   PET: 45,
+  hinges: 3, // Price per hinge
 };
+
+const handleSKUs = [
+  {
+    sku: "HKL 1",
+    description: "Modern Metal Pull Gold",
+    price: 10,
+    productNumber: "#BP87396158",
+  },
+  {
+    sku: "HKL 2",
+    description: "Modern Metal Pull Matte Black",
+    price: 10,
+    productNumber: "#BP7470128900",
+  },
+  {
+    sku: "HKL 3",
+    description: "Modern Metal Pull Brushed Nickel",
+    price: 10,
+    productNumber: "#BP7470128195",
+  },
+  {
+    sku: "HKL 4",
+    description: "Modern Metal Pull Nickel",
+    price: 8,
+    productNumber: "#6132896195",
+  },
+  {
+    sku: "HKL 5",
+    description: "Modern Metal Pull Brushed Bronze",
+    price: 8,
+    productNumber: "#BP820128BORB",
+  },
+  {
+    sku: "HKL 6",
+    description: "Modern Metal Pull Grey",
+    price: 8,
+    productNumber: "#BP2323128195",
+  },
+  {
+    sku: "HKL 7",
+    description: "Modern Metal Pull Straight",
+    price: 8,
+    productNumber: "#458192195TT",
+  },
+  {
+    sku: "HKL 8",
+    description: "Modern Metal Pull Chrome",
+    price: 9,
+    productNumber: "#BP6969128140",
+  },
+  {
+    sku: "HKL 9",
+    description: "Modern Aluminum Pull",
+    price: 8,
+    productNumber: "#BP46013210",
+  },
+  {
+    sku: "HKL 10",
+    description: "Modern Edge Pull Gold",
+    price: 10,
+    productNumber: "#BP989880166",
+  },
+  {
+    sku: "HKL 11",
+    description: "Modern Metal Knob Gold",
+    price: 10,
+    productNumber: "#BP5139632CHBRZ",
+  },
+  {
+    sku: "HKL 12",
+    description: "Modern Metal Knob Nickel",
+    price: 6,
+    productNumber: "#BP879040195",
+  },
+  {
+    sku: "HKL 13",
+    description: "Modern Metal Knob Bronze",
+    price: 7,
+    productNumber: "#BP734544CHBRZ",
+  },
+  {
+    sku: "HKL 14",
+    description: "Transitional Metal Knob",
+    price: 9,
+    productNumber: "#BP722740195",
+  },
+  {
+    sku: "HKL 15",
+    description: "Modern Plastic Knob",
+    price: 5,
+    productNumber: "#BP234725166",
+  },
+];
+
+const melamineMaterialColors = [
+  {
+    sku: "KL 1",
+    catalog: "WMK-057-B",
+    color: "Natural Grey-KL1",
+    material: "Melamine",
+  },
+  {
+    sku: "KL 2",
+    catalog: "WMK-080",
+    color: "Sunset Grey-KL2",
+    material: "Melamine",
+  },
+  { sku: "KL 3", catalog: "WMK-081", color: "Black-KL3", material: "Melamine" },
+  {
+    sku: "KL 4",
+    catalog: "WMK-082-G",
+    color: "White-KL4",
+    material: "Melamine",
+  },
+  {
+    sku: "KL 5",
+    catalog: "WMK-088-B",
+    color: "Dark Grey-KL5",
+    material: "Melamine",
+  },
+  { sku: "KL 6", catalog: "WMK-089", color: "Grey-KL6", material: "Melamine" },
+  {
+    sku: "KL 7",
+    catalog: "WMK-095",
+    color: "Glossy White-KL7",
+    material: "Melamine",
+  },
+  {
+    sku: "KL 8",
+    catalog: "WMK-006-B",
+    color: "Nogal Wood-KL8",
+    material: "Melamine",
+  },
+  {
+    sku: "KL 9",
+    catalog: "WMK-009-C",
+    color: "Fresno Wood-KL9",
+    material: "Melamine",
+  },
+  {
+    sku: "KL 10",
+    catalog: "WMK-019",
+    color: "Glacial Wood-KL10",
+    material: "Melamine",
+  },
+  {
+    sku: "KL 11",
+    catalog: "WMK-020-B",
+    color: "Dark Wood-KL11",
+    material: "Melamine",
+  },
+  {
+    sku: "KL 12",
+    catalog: "WMK-021",
+    color: "Dark Oak Wood-KL12",
+    material: "Melamine",
+  },
+  {
+    sku: "KL 13",
+    catalog: "WMK-022",
+    color: "Beige Wood-KL13",
+    material: "Melamine",
+  },
+  {
+    sku: "KL 14",
+    catalog: "WMK-041-B",
+    color: "White Wood-KL14",
+    material: "Melamine",
+  },
+  {
+    sku: "KL 15",
+    catalog: "WMK-042",
+    color: "Grey Wood-KL15",
+    material: "Melamine",
+  },
+  {
+    sku: "KL 16",
+    catalog: "WMK-043-B",
+    color: "Black Wood-KL16",
+    material: "Melamine",
+  },
+  {
+    sku: "KL 17",
+    catalog: "WMK-015-B",
+    color: "Dark Grey Wood-KL17",
+    material: "Melamine",
+  },
+];
+
+const petMaterialColors = [
+  { sku: "KL 18", catalog: "WMK-082-G", color: "White-KL18", material: "PET" },
+  { sku: "KL 19", catalog: "WMK-089", color: "Grey-KL19", material: "PET" },
+  {
+    sku: "KL 20",
+    catalog: "WMK-080",
+    color: "Sunset Grey-KL20",
+    material: "PET",
+  },
+  {
+    sku: "KL 21",
+    catalog: "WMK-088-B",
+    color: "Dark Grey-KL21",
+    material: "PET",
+  },
+  {
+    sku: "KL 22",
+    catalog: "WMK-020-B",
+    color: "Dark Wood-KL22",
+    material: "PET",
+  },
+  { sku: "KL 23", catalog: "WMK-081", color: "Black-KL23", material: "PET" },
+  {
+    sku: "KL 24",
+    catalog: "WMK-095",
+    color: "Glossy White-KL24",
+    material: "PET",
+  },
+  {
+    sku: "KL 25",
+    catalog: "WMK-057-B",
+    color: "Natural Grey-KL25",
+    material: "PET",
+  },
+];
+
+const finishingTouchSKUs = [
+  { sku: "FTKL 1", catalog: "WMK-057-B" },
+  { sku: "FTKL 2", catalog: "WMK-080" },
+  { sku: "FTKL 3", catalog: "WMK-081" },
+  { sku: "FTKL 4", catalog: "WMK-082-G" },
+  { sku: "FTKL 5", catalog: "WMK-088-B" },
+  { sku: "FTKL 6", catalog: "WMK-089" },
+  { sku: "FTKL 7", catalog: "WMK-095" },
+  { sku: "FTKL 8", catalog: "WMK-006-B" },
+  { sku: "FTKL 9", catalog: "WMK-009-C" },
+  { sku: "FTKL 10", catalog: "WMK-019" },
+  { sku: "FTKL 11", catalog: "WMK-020-B" },
+  { sku: "FTKL 12", catalog: "WMK-021" },
+  { sku: "FTKL 13", catalog: "WMK-022" },
+  { sku: "FTKL 14", catalog: "WMK-041-B" },
+  { sku: "FTKL 15", catalog: "WMK-042" },
+  { sku: "FTKL 16", catalog: "WMK-043-B" },
+  { sku: "FTKL 17", catalog: "WMK-015-B" },
+];
+
+const hingesSKUs = [
+  { sku: "Normal Soft Close Hinges", price: 3 },
+  { sku: "Face Frame Hinges", price: 3 },
+];
 
 const categoriesWithFormulas = [
   "doors",
@@ -60,22 +278,81 @@ const categoriesWithFormulas = [
   "sidePanels",
   "kickPlates",
   "trim",
+  "finishingTouch",
 ];
 
-const categoriesWithStandardPrices = ["handles", "hinges", "extras"];
+const categoriesWithStandardPrices = ["handles", "hinges"];
 
-const GenerateQuoteForm = ({ selectedProject }) => {
+const GenerateQuoteForm = ({
+  selectedProject,
+  setThereIsClickForQoute,
+  handleProjectClick,
+}) => {
   const [loading, setLoading] = useState(false);
   const [quoteDetails, setQuoteDetails] = useState({
     projectTemplate: selectedProject,
-    doors: [{ material: "", width: "", height: "", quantity: "" }],
-    drawerFronts: [{ material: "", width: "", height: "", quantity: "" }],
-    sidePanels: [{ material: "", width: "", height: "", quantity: "" }],
-    kickPlates: [{ material: "", width: "", height: "", quantity: "" }],
-    trim: [{ material: "", width: "", height: "", quantity: "" }],
-    handles: [{ sku: "", quantity: "" }],
+    doors: [
+      {
+        material: "",
+        width: "",
+        height: "",
+        quantity: "",
+        color: "",
+        sku: { skuCode: "", catalog: "" },
+      },
+    ],
+    drawerFronts: [
+      {
+        material: "",
+        width: "",
+        height: "",
+        quantity: "",
+        color: "",
+        sku: { skuCode: "", catalog: "" },
+      },
+    ],
+    sidePanels: [
+      {
+        material: "",
+        width: "",
+        height: "",
+        quantity: "",
+        color: "",
+        sku: { skuCode: "", catalog: "" },
+      },
+    ],
+    kickPlates: [
+      {
+        material: "",
+        width: "",
+        height: "",
+        quantity: "",
+        color: "",
+        sku: { skuCode: "", catalog: "" },
+      },
+    ],
+    trim: [
+      {
+        material: "",
+        width: "",
+        height: "",
+        quantity: "",
+        color: "",
+        sku: { skuCode: "", catalog: "" },
+      },
+    ],
+    finishingTouch: [
+      {
+        sku: { skuCode: "", catalog: "" },
+        width: "",
+        height: "",
+        quantity: "",
+      },
+    ],
+    handles: [
+      { sku: { name: "", skuCode: "", productNumber: "" }, quantity: "" },
+    ],
     hinges: [{ sku: "", quantity: "" }],
-    extras: [{ sku: "", quantity: "" }],
   });
   const [totalAmount, setTotalAmount] = useState(0);
   const router = useRouter();
@@ -85,24 +362,37 @@ const GenerateQuoteForm = ({ selectedProject }) => {
     const calculateTotalAmount = () => {
       let total = 0;
 
+      // Calculations for categories with formulas like doors, panels, etc.
       categoriesWithFormulas.forEach((category) => {
         quoteDetails[category].forEach((item) => {
-          const materialPrice = marketPrices[item.material] || 0;
+          const materialPrice =
+            category !== "finishingTouch"
+              ? marketPrices[item.material] || 0
+              : 3;
           const size =
             (parseFloat(item.width) || 0) * (parseFloat(item.height) || 0);
           const quantity = parseInt(item.quantity) || 0;
+          // console.log("sizeee:", materialPrice * 0.6944444444444444);
           total += quantity * (materialPrice * (size / 144));
         });
       });
 
-      categoriesWithStandardPrices.forEach((category) => {
-        quoteDetails[category].forEach((item) => {
-          // Assuming standard prices are to be fetched later, here using placeholder values
-          const price = 10; // Placeholder price
-          const quantity = parseInt(item.quantity) || 0;
-          total += price * quantity;
+      // Calculations for handles using handleSKUs array
+      if (quoteDetails.handles) {
+        quoteDetails.handles.forEach((handle) => {
+          const handleDetail =
+            handleSKUs.find((h) => h.sku === handle.sku.skuCode) || {};
+          total += handle.quantity * (handleDetail.price || 0);
         });
-      });
+      }
+
+      // Calculations for hinges using hingesSKUs array
+      if (quoteDetails.hinges) {
+        quoteDetails.hinges.forEach((hinge) => {
+          const hingeDetail = hingesSKUs.find((h) => h.sku === hinge.sku) || {};
+          total += hinge.quantity * (hingeDetail.price || 0);
+        });
+      }
 
       setTotalAmount(Math.round(total));
     };
@@ -112,20 +402,113 @@ const GenerateQuoteForm = ({ selectedProject }) => {
 
   const handleInputChange = (event, category, index) => {
     const { name, value } = event.target;
-    setQuoteDetails((prevDetails) => {
-      const updatedCategory = [...prevDetails[category]];
-      updatedCategory[index] = { ...updatedCategory[index], [name]: value };
-      return { ...prevDetails, [category]: updatedCategory };
-    });
+    let updatedQuoteDetails = { ...quoteDetails };
+
+    if (category === "doors" && name === "quantity") {
+      // Parse new value and update the specific door's quantity
+      const updatedQuantity = parseInt(value) || 0;
+      updatedQuoteDetails.doors[index] = {
+        ...updatedQuoteDetails.doors[index],
+        quantity: updatedQuantity,
+      };
+
+      // Recalculate total doors quantity immediately
+      const totalDoorsQuantity = updatedQuoteDetails.doors.reduce(
+        (total, door) => total + (parseInt(door.quantity) || 0),
+        0
+      );
+
+      // Update hinges quantity based on the new total
+      updatedQuoteDetails.hinges[0] = {
+        ...updatedQuoteDetails.hinges[0],
+        quantity: totalDoorsQuantity * 2,
+      };
+    }
+
+    // Handle material and color selections for categories with these attributes
+    if (
+      name === "color" &&
+      ["doors", "drawerFronts", "sidePanels", "kickPlates", "trim"].includes(
+        category
+      )
+    ) {
+      const materialType = updatedQuoteDetails[category][index].material;
+      const colorArray =
+        materialType === "melamine"
+          ? melamineMaterialColors
+          : petMaterialColors;
+      const colorDetails = colorArray.find((c) => c.color === value);
+
+      // Update the state with the new color details
+      updatedQuoteDetails[category][index] = {
+        ...updatedQuoteDetails[category][index],
+        color: value,
+        sku: { skuCode: colorDetails.sku, catalog: colorDetails.catalog },
+      };
+    } else {
+      // Update non-color attributes normally
+      updatedQuoteDetails[category][index] = {
+        ...updatedQuoteDetails[category][index],
+        [name]: value,
+      };
+    }
+
+    // Handle specific categories like handles, hinges, and finishing touches
+    if (category === "handles" && name === "sku") {
+      const handleDetails = handleSKUs.find((h) => h.sku === value);
+      updatedQuoteDetails.handles[index] = {
+        ...updatedQuoteDetails.handles[index],
+        sku: {
+          name: handleDetails.description,
+          skuCode: handleDetails.sku,
+          productNumber: handleDetails.productNumber,
+        }, // Assuming SKU is the product number
+        quantity: updatedQuoteDetails.handles[index].quantity,
+      };
+    } else if (category === "hinges" && name === "sku") {
+      updatedQuoteDetails.hinges[index] = {
+        ...updatedQuoteDetails.hinges[index],
+        sku: value, // No additional details are specified for hinges
+        quantity: updatedQuoteDetails.hinges[index].quantity,
+      };
+    } else if (category === "finishingTouch" && name === "sku") {
+      const finishingDetails = finishingTouchSKUs.find((f) => f.sku === value);
+      updatedQuoteDetails.finishingTouch[index] = {
+        ...updatedQuoteDetails.finishingTouch[index],
+        sku: {
+          skuCode: finishingDetails.sku,
+          catalog: finishingDetails.catalog,
+        },
+        quantity: updatedQuoteDetails.finishingTouch[index].quantity,
+      };
+    }
+
+    setQuoteDetails(updatedQuoteDetails);
   };
 
   const handleAddItem = (category) => {
     const newItem = categoriesWithFormulas.includes(category)
-      ? { material: "", width: "", height: "", quantity: "" }
+      ? {
+          material: "",
+          width: "",
+          height: "",
+          quantity: "",
+          color: "",
+          sku: { skuCode: "", catalog: "" },
+        }
+      : category === "handles"
+      ? { sku: { name: "", skuCode: "", productNumber: "" }, quantity: "" }
+      : category === "finishingTouch"
+      ? {
+          sku: { skuCode: "", catalog: "" },
+          width: "",
+          height: "",
+          quantity: "",
+        }
       : { sku: "", quantity: "" };
-    setQuoteDetails((prevDetails) => ({
-      ...prevDetails,
-      [category]: [...prevDetails[category], newItem],
+    setQuoteDetails((prev) => ({
+      ...prev,
+      [category]: [...prev[category], newItem],
     }));
   };
 
@@ -140,6 +523,7 @@ const GenerateQuoteForm = ({ selectedProject }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    console.log("quoteDetails:", quoteDetails);
     const response = await fetch("/api/quotes", {
       method: "POST",
       headers: {
@@ -156,19 +540,74 @@ const GenerateQuoteForm = ({ selectedProject }) => {
       setLoading(false);
       setSuccessMessage("Quote generated successfully!");
       setQuoteDetails({
-        projectTemplate: "",
-        doors: [{ material: "", width: "", height: "", quantity: "" }],
-        drawerFronts: [{ material: "", width: "", height: "", quantity: "" }],
-        sidePanels: [{ material: "", width: "", height: "", quantity: "" }],
-        kickPlates: [{ material: "", width: "", height: "", quantity: "" }],
-        trim: [{ material: "", width: "", height: "", quantity: "" }],
-        handles: [{ sku: "", quantity: "" }],
+        projectTemplate: null,
+        doors: [
+          {
+            material: "",
+            width: "",
+            height: "",
+            quantity: "",
+            color: "",
+            sku: { skuCode: "", catalog: "" },
+          },
+        ],
+        drawerFronts: [
+          {
+            material: "",
+            width: "",
+            height: "",
+            quantity: "",
+            color: "",
+            sku: { skuCode: "", catalog: "" },
+          },
+        ],
+        sidePanels: [
+          {
+            material: "",
+            width: "",
+            height: "",
+            quantity: "",
+            color: "",
+            sku: { skuCode: "", catalog: "" },
+          },
+        ],
+        kickPlates: [
+          {
+            material: "",
+            width: "",
+            height: "",
+            quantity: "",
+            color: "",
+            sku: { skuCode: "", catalog: "" },
+          },
+        ],
+        trim: [
+          {
+            material: "",
+            width: "",
+            height: "",
+            quantity: "",
+            color: "",
+            sku: { skuCode: "", catalog: "" },
+          },
+        ],
+        finishingTouch: [
+          {
+            sku: { skuCode: "", catalog: "" },
+            width: "",
+            height: "",
+            quantity: "",
+          },
+        ],
+        handles: [
+          { sku: { name: "", skuCode: "", productNumber: "" }, quantity: "" },
+        ],
         hinges: [{ sku: "", quantity: "" }],
-        extras: [{ sku: "", quantity: "" }],
       });
       setTimeout(() => {
         setSuccessMessage("");
-        router.refresh();
+        setThereIsClickForQoute(false);
+        handleProjectClick(selectedProject._id);
       }, 3000);
     } else {
       console.error("Failed to generate quote");
@@ -240,7 +679,10 @@ const GenerateQuoteForm = ({ selectedProject }) => {
           {[...categoriesWithFormulas, ...categoriesWithStandardPrices].map(
             (category) => (
               <Box key={category}>
-                <Typography variant="h6" sx={{ mb: "14px" }}>
+                <Typography
+                  variant="h6"
+                  sx={{ mb: "14px", textTransform: "capitalize" }}
+                >
                   {category.replace(/([A-Z])/g, " $1")}
                 </Typography>
                 {quoteDetails[category].map((item, index) => (
@@ -256,66 +698,79 @@ const GenerateQuoteForm = ({ selectedProject }) => {
                   >
                     <Typography
                       variant="h6"
-                      sx={{ mb: "!2px", fontSize: "12px", gridColumn: "1/-1" }}
+                      sx={{
+                        mb: "!2px",
+                        fontSize: "12px",
+                        gridColumn: "1/-1",
+                        textTransform: "capitalize",
+                      }}
                     >
                       {category.replace(/([A-Z])/g, " $1")} #{index + 1}
                     </Typography>
                     {categoriesWithFormulas.includes(category) ? (
                       <>
-                        <Box sx={{ gridColumn: "1/-1" }}>
-                          <FormControl fullWidth>
-                            <Select
-                              sx={{ height: "44px" }}
-                              labelId="material-label"
-                              value={item.material}
-                              onChange={(e) =>
-                                handleInputChange(e, category, index)
-                              }
-                              name="material"
-                              displayEmpty
-                              inputProps={{ "aria-label": "Without label" }}
-                              input={<OutlinedInput />}
-                            >
-                              <MenuItem disabled value="">
-                                Select Material
-                              </MenuItem>
-                              {Object.keys(marketPrices).map(
-                                (material, idx) => (
-                                  <MenuItem key={idx} value={material}>
-                                    {material}
+                        {category !== "finishingTouch" ? (
+                          <Box sx={{ gridColumn: "1/-1" }}>
+                            <FormControl fullWidth>
+                              <Select
+                                sx={{
+                                  height: "44px",
+                                  textTransform: "capitalize",
+                                }}
+                                labelId="material-label"
+                                value={item.material}
+                                onChange={(e) =>
+                                  handleInputChange(e, category, index)
+                                }
+                                name="material"
+                                displayEmpty
+                                inputProps={{ "aria-label": "Without label" }}
+                                input={<OutlinedInput />}
+                              >
+                                <MenuItem disabled value="">
+                                  Select Material
+                                </MenuItem>
+                                {Object.keys(marketPrices).map(
+                                  (material, idx) =>
+                                    material !== "hinges" && (
+                                      <MenuItem
+                                        key={idx}
+                                        value={material}
+                                        sx={{ textTransform: "capitalize" }}
+                                      >
+                                        {material}
+                                      </MenuItem>
+                                    )
+                                )}
+                              </Select>
+                            </FormControl>
+                          </Box>
+                        ) : (
+                          <Box sx={{ gridColumn: "1/-1" }}>
+                            <FormControl fullWidth>
+                              <Select
+                                sx={{ height: "44px" }}
+                                labelId="finishingTouch-label"
+                                value={item.sku.skuCode}
+                                onChange={(e) =>
+                                  handleInputChange(e, category, index)
+                                }
+                                name="sku"
+                                displayEmpty
+                                inputProps={{ "aria-label": "Without label" }}
+                                input={<OutlinedInput />}
+                              >
+                                <MenuItem value="">Choose SKU</MenuItem>
+                                {finishingTouchSKUs.map((handle) => (
+                                  <MenuItem key={handle.sku} value={handle.sku}>
+                                    {handle.sku}
                                   </MenuItem>
-                                )
-                              )}
-                            </Select>
-                          </FormControl>
-                        </Box>
-                        {/* <Box>
-                          <FormControl fullWidth size="medium">
-                            <Select
-                              sx={{ height: "44px" }}
-                              value={item.size}
-                              labelId="size-label"
-                              onChange={(e) =>
-                                handleInputChange(e, category, index)
-                              }
-                              name="size"
-                              displayEmpty
-                              input={<OutlinedInput />}
-                              inputProps={{ "aria-label": "Without label" }}
-                            >
-                              <MenuItem disabled value="">
-                                Select Size
-                              </MenuItem>
-                              {Object.keys(pricing[category].sizes).map(
-                                (size, idx) => (
-                                  <MenuItem key={idx} value={size}>
-                                    {size}
-                                  </MenuItem>
-                                )
-                              )}
-                            </Select>
-                          </FormControl>
-                        </Box> */}
+                                ))}
+                              </Select>
+                            </FormControl>
+                          </Box>
+                        )}
+
                         <Box>
                           <CustomInput
                             type="text"
@@ -338,23 +793,121 @@ const GenerateQuoteForm = ({ selectedProject }) => {
                             inputName="height"
                           />
                         </Box>
+                        {category !== "finishingTouch" && (
+                          <FormControl
+                            fullWidth
+                            sx={{ gridColumn: "2" }}
+                            disabled={!item.material}
+                          >
+                            <Select
+                              sx={{ height: "44px" }}
+                              labelId="color-label"
+                              value={item.color}
+                              onChange={(e) =>
+                                handleInputChange(e, category, index)
+                              }
+                              name="color"
+                              displayEmpty
+                              inputProps={{ "aria-label": "Without label" }}
+                              input={<OutlinedInput />}
+                            >
+                              <MenuItem value="">Select Color</MenuItem>
+                              {(item.material === "melamine"
+                                ? melamineMaterialColors
+                                : petMaterialColors
+                              ).map((material) => (
+                                <MenuItem
+                                  key={material.catalog}
+                                  value={material.color}
+                                >
+                                  {material.color}
+                                </MenuItem>
+                              ))}
+                            </Select>
+                          </FormControl>
+                        )}
                       </>
+                    ) : categoriesWithStandardPrices.includes("handles") &&
+                      category === "handles" ? (
+                      <Box>
+                        <FormControl fullWidth>
+                          <Select
+                            sx={{ height: "44px" }}
+                            labelId="handle-label"
+                            value={item.sku.skuCode}
+                            onChange={(e) =>
+                              handleInputChange(e, "handles", index)
+                            }
+                            name="sku"
+                            displayEmpty
+                            inputProps={{ "aria-label": "Without label" }}
+                            input={<OutlinedInput />}
+                          >
+                            <MenuItem value="">Choose SKU</MenuItem>
+                            {handleSKUs.map((handle) => (
+                              <MenuItem key={handle.sku} value={handle.sku}>
+                                {handle.description} - ${handle.price}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      </Box>
+                    ) : category === "hinges" ? (
+                      <Box>
+                        <FormControl fullWidth>
+                          <Select
+                            sx={{ height: "44px" }}
+                            labelId="hinges-label"
+                            value={item.sku}
+                            onChange={(e) =>
+                              handleInputChange(e, "hinges", index)
+                            }
+                            name="sku"
+                            displayEmpty
+                            inputProps={{ "aria-label": "Without label" }}
+                            input={<OutlinedInput />}
+                          >
+                            <MenuItem value="">Choose SKU</MenuItem>
+                            {hingesSKUs.map((handle) => (
+                              <MenuItem key={handle.sku} value={handle.sku}>
+                                {handle.sku} - ${handle.price}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      </Box>
                     ) : (
                       <Box>
-                        <CustomInput
-                          type="text"
-                          value={item.sku}
-                          handleChange={(e) =>
-                            handleInputChange(e, category, index)
-                          }
-                          placeholder="Enter SKU"
-                          inputName="sku"
-                        />
+                        <FormControl fullWidth>
+                          <Select
+                            sx={{ height: "44px" }}
+                            labelId="finishingTouch-label"
+                            value={item.sku}
+                            onChange={(e) =>
+                              handleInputChange(e, category, index)
+                            }
+                            name="sku"
+                            displayEmpty
+                            inputProps={{ "aria-label": "Without label" }}
+                            input={<OutlinedInput />}
+                          >
+                            <MenuItem value="">Choose SKU</MenuItem>
+                            {finishingTouchSKUs.map((handle) => (
+                              <MenuItem key={handle.sku} value={handle.sku}>
+                                {handle.sku}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
                       </Box>
                     )}
-                    <Box>
+                    <Box
+                      sx={{
+                        gridRow:
+                          categoriesWithFormulas.includes(category) && "4",
+                      }}
+                    >
                       <CustomInput
-                        // label="Quantity"
                         type="text"
                         value={item.quantity}
                         handleChange={(e) =>

@@ -1,13 +1,25 @@
 import mongoose from "mongoose";
 
+const itemSKUSchema = {
+  name: String,
+  skuCode: String,
+  catalog: String,
+};
+
 const itemSchema = {
   material: String,
   width: String,
   height: String,
+  color: String,
   quantity: Number,
+  sku: { type: itemSKUSchema },
 };
 
 const handleSchema = {
+  sku: { type: itemSKUSchema },
+  quantity: Number,
+};
+const hingeSchema = {
   sku: String,
   quantity: Number,
 };
@@ -50,6 +62,12 @@ const quoteSchema = new mongoose.Schema({
       _id: false,
     },
   ],
+  finishingTouch: [
+    {
+      type: itemSchema,
+      _id: false,
+    },
+  ],
   handles: [
     {
       type: handleSchema,
@@ -58,13 +76,7 @@ const quoteSchema = new mongoose.Schema({
   ],
   hinges: [
     {
-      type: handleSchema,
-      _id: false,
-    },
-  ],
-  extras: [
-    {
-      type: handleSchema,
+      type: hingeSchema,
       _id: false,
     },
   ],

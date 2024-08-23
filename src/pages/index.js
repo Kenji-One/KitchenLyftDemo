@@ -1,7 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Image from "next/legacy/image";
+import dynamic from "next/dynamic";
+
+const Carousel = dynamic(() => import("react-slick"), { ssr: false });
 import { useRouter } from "next/navigation";
 import {
   AppBar,
@@ -13,10 +15,12 @@ import {
   Tabs,
   Tab,
   Container,
+  IconButton,
   Popover,
   MenuItem,
   Divider,
 } from "@mui/material";
+import ProjectCard from "@/components/projects/ProjectCard";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import Projects from "@/components/projects/Projects";
 import Orders from "@/components/orders/Orders";
@@ -37,6 +41,9 @@ import PersonIcon from "@mui/icons-material/Person";
 import LogoutIcon from "@mui/icons-material/Logout";
 import GroupIcon from "@mui/icons-material/Group";
 import Loader from "@/utils/Loader";
+import EastIcon from "@mui/icons-material/East";
+import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
+import ChatsList from "@/components/messages/ChatsList";
 
 const Dashboard = ({ session2 }) => {
   const router = useRouter();
@@ -49,9 +56,12 @@ const Dashboard = ({ session2 }) => {
   const [chat, setChat] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [chats, setChats] = useState([]);
+  const [selectedChat, setSelectedChat] = useState(null);
 
   const handleChange = (event, newValue) => {
     selectedProject !== null && setSelectedProject(null);
+    thereIsClickForQoute && setThereIsClickForQoute(false);
     setValue(newValue);
   };
   const letsGenerateQuote = (event, newValue) => {
@@ -141,6 +151,7 @@ const Dashboard = ({ session2 }) => {
       setSelectedProject(data.project);
       setQuote(data.quote);
       setChat(data.chat); // Fetch and set the chat data
+      setValue(1);
       setLoading(false);
     } catch (error) {
       setLoading(false);
@@ -189,6 +200,62 @@ const Dashboard = ({ session2 }) => {
   const open = Boolean(anchorEl);
   const id = open ? "profile-popover" : undefined;
 
+  const settings = {
+    dots: true,
+    infinite: false,
+    speed: 500,
+    slidesToShow: 4,
+    slidesToScroll: 4,
+    nextArrow: <EastIcon />,
+    prevArrow: <KeyboardBackspaceIcon />,
+    responsive: [
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: 3,
+          slidesToScroll: 3,
+          infinite: true,
+        },
+      },
+      {
+        breakpoint: 600,
+        settings: {
+          slidesToShow: 2,
+          slidesToScroll: 2,
+          initialSlide: 2,
+        },
+      },
+      {
+        breakpoint: 480,
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+        },
+      },
+    ],
+  };
+
+  const fetchMessages = async (projectId) => {
+    setLoading(true);
+    const response = await fetch(`/api/messages?projectId=${projectId}`);
+    const data = await response.json();
+    setValue(3);
+    setSelectedChat(data);
+    setLoading(false);
+  };
+
+  const fetchChats = async () => {
+    setLoading(true);
+    const response = await fetch("/api/messages");
+    const data = await response.json();
+    setChats(data);
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchChats();
+  }, []);
+
   return (
     <>
       <Loader open={loading} />
@@ -198,7 +265,7 @@ const Dashboard = ({ session2 }) => {
         sx={{
           bgcolor: "background.paper",
           color: "text.primary",
-          mb: value || selectedProject === 3 ? 0 : 2,
+          mb: value || selectedProject === 3 || value === 0 ? 0 : 2,
           boxShadow: "none",
           borderBottom: 1,
           borderColor: "#32374033",
@@ -336,13 +403,13 @@ const Dashboard = ({ session2 }) => {
         maxWidth="xl"
         sx={{
           padding: value === 3 ? "0 !important" : "",
-          paddingRight: selectedProject ? "0 !important" : "",
-          paddingTop: selectedProject ? "0 !important" : "",
-          paddingBottom: selectedProject ? "0 !important" : "",
+          paddingRight: selectedProject || value === 0 ? "0 !important" : "",
+          paddingTop: selectedProject || value === 0 ? "0 !important" : "",
+          paddingBottom: selectedProject || value === 0 ? "0 !important" : "",
           height:
-            selectedProject && !thereIsClickForQoute
-              ? "calc(100vh - 72px) !important"
-              : "",
+            selectedProject || thereIsClickForQoute || value !== 0
+              ? "unset"
+              : "calc(100vh - 72px) !important",
         }}
       >
         <Box sx={{ height: "100%" }}>
@@ -357,18 +424,87 @@ const Dashboard = ({ session2 }) => {
                   letsGenerateQuote={letsGenerateQuote}
                 />
               ) : (
-                <GenerateQuoteForm selectedProject={selectedProject} />
+                <GenerateQuoteForm
+                  selectedProject={selectedProject}
+                  setThereIsClickForQoute={setThereIsClickForQoute}
+                  handleProjectClick={handleProjectClick}
+                />
               )}
             </>
           ) : (
             <>
               {value === 0 && (
-                <Typography
-                  variant="h5"
-                  sx={{ mb: 2, fontSize: "24px", textTransform: "uppercase" }}
+                <Box
+                  sx={{
+                    height: "100%",
+                    display: "grid",
+                    gridTemplateColumns: "3.4fr minmax(390px, 1.6fr)",
+                    gap: "54px",
+                  }}
                 >
-                  Welcome, {session2.user.name}
-                </Typography>
+                  <Box
+                    sx={{
+                      width: "100%",
+                      overflow: "hidden",
+                      display: "flex",
+                      flexDirection: "column",
+                    }}
+                  >
+                    <Typography
+                      variant="h5"
+                      sx={{
+                        my: "32px",
+                        fontSize: "24px",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      Welcome, {session2.user.name}
+                    </Typography>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: "24px",
+                      }}
+                    >
+                      <Typography
+                        variant="h5"
+                        sx={{ mb: 2, textTransform: "uppercase" }}
+                      >
+                        Projects
+                      </Typography>
+                    </Box>
+
+                    <Carousel {...settings}>
+                      {projects.map((project, index) => (
+                        <ProjectCard
+                          key={index}
+                          project={project}
+                          onClick={() => handleProjectClick(project._id)}
+                        />
+                      ))}
+                    </Carousel>
+                    <Typography
+                      variant="body1"
+                      sx={{
+                        fontWeight: "600",
+                        color: "#32374099",
+                        marginTop: "auto",
+                        marginBottom: "44px",
+                      }}
+                    >
+                      2024 © Kitchen Lyft, All rights reserved
+                    </Typography>
+                  </Box>
+                  <Box sx={{ borderLeft: 1, borderColor: "#32374033" }}>
+                    <ChatsList
+                      chats={chats}
+                      fetchMessages={fetchMessages}
+                      tabValue={0}
+                    />
+                  </Box>
+                </Box>
               )}
               {value === 1 && (
                 <Projects
@@ -377,7 +513,14 @@ const Dashboard = ({ session2 }) => {
                 />
               )}
               {value === 2 && <Orders />}
-              {value === 3 && <Messages />}
+              {value === 3 && (
+                <Messages
+                  selectedChat={selectedChat}
+                  setSelectedChat={setSelectedChat}
+                  chats={chats}
+                  setChats={setChats}
+                />
+              )}
 
               {value === 4 && (
                 <UserTable

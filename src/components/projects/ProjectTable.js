@@ -12,6 +12,7 @@ import {
   Chip,
   Avatar,
 } from "@mui/material";
+import ProjectStatusChip from "./ProjectStatusChip";
 
 const ProjectTable = ({ projects, onProjectClick }) => {
   return (
@@ -60,7 +61,7 @@ const ProjectTable = ({ projects, onProjectClick }) => {
               >
                 <Avatar
                   alt={project.title}
-                  src={project.image || "/default-project-image.jpg"}
+                  src={project.images[0] || "/default-project-image.jpg"}
                   sx={{
                     marginRight: "12px",
                     width: "100px",
@@ -71,33 +72,7 @@ const ProjectTable = ({ projects, onProjectClick }) => {
                 {project.title}
               </TableCell>
               <TableCell>
-                <Chip
-                  label={project.status}
-                  sx={{
-                    height: "unset",
-                    backgroundColor:
-                      project.status === "In Progress" ||
-                      project.status === "In Review"
-                        ? "#BB994133"
-                        : project.status === "Finished"
-                        ? "#7C9A4733"
-                        : "#BB484133",
-                    color:
-                      project.status === "In Progress" ||
-                      project.status === "In Review"
-                        ? "#BB9941"
-                        : project.status === "Finished"
-                        ? "#7C9A47"
-                        : "#BB4841",
-                    borderRadius: "4px",
-                    fontSize: "12px",
-                    fontWeight: "500",
-                    textTransform: "uppercase",
-                    "& .MuiChip-label.MuiChip-labelMedium": {
-                      padding: "4px 8px",
-                    },
-                  }}
-                />
+                <ProjectStatusChip status={project.status} />
               </TableCell>
               <TableCell>{project.user_id.username}</TableCell>
               <TableCell>{project.location}</TableCell>

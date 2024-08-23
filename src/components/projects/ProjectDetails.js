@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import {
   Box,
   Typography,
@@ -13,7 +14,7 @@ import {
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import MessageInput from "../messages/MessageInput";
 import MessageList from "../messages/MessageList";
-import Image from "next/image";
+import ProjectStatusChip from "./ProjectStatusChip";
 
 const ProjectDetails = ({
   project,
@@ -22,6 +23,20 @@ const ProjectDetails = ({
   setSelectedProject,
   letsGenerateQuote,
 }) => {
+  const router = useRouter();
+
+  // Helper function to format date
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return !isNaN(date)
+      ? new Intl.DateTimeFormat("default", {
+          year: "numeric",
+          month: "long",
+          day: "2-digit",
+        }).format(date)
+      : "N/A";
+  };
+
   const quoteCategories = [
     { name: "Doors", data: quote?.doors },
     { name: "Drawer Fronts", data: quote?.drawerFronts },
@@ -30,7 +45,7 @@ const ProjectDetails = ({
     { name: "Trim", data: quote?.trim },
     { name: "Handles", data: quote?.handles },
     { name: "Hinges", data: quote?.handles },
-    { name: "Extras", data: quote?.extras },
+    { name: "Finishing Touch", data: quote?.finishingTouch },
   ];
   const handleSend = async (text) => {
     const response = await fetch("/api/messages", {
@@ -106,7 +121,7 @@ const ProjectDetails = ({
           <Box sx={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <Button
               variant="contained"
-              onClick={() => router.push(`/projects/${project._id}/edit`)}
+              onClick={() => router.push(`/project/${project._id}/edit`)}
               sx={{
                 color: "#323740",
                 backgroundColor: "rgba(50, 55, 64, 0.102)",
@@ -116,6 +131,18 @@ const ProjectDetails = ({
               }}
             >
               Edit Project
+            </Button>
+            <Button
+              variant="contained"
+              onClick={() => letsGenerateQuote()}
+              sx={{
+                backgroundColor: "#60B143",
+                "&:hover": {
+                  backgroundColor: "rgba(96, 177, 67, 0.9)",
+                },
+              }}
+            >
+              Complete Order
             </Button>
             <Button
               variant="contained"
@@ -137,24 +164,13 @@ const ProjectDetails = ({
             gridTemplateColumns: "1fr 1fr 1fr",
             gridTemplateRows: "266px 113px",
             gap: "5px",
-            // mt: "12px",
           }}
         >
-          {/* <Image
-            src={project.image || "/default-project-image.jpg"}
-            alt={project.title}
-            width={200}
-            height={150}
-            style={{
-              borderRadius: "4px",
-              width: "100%",
-              height: "100%",
-              gridColumn: "1/-1",
-              objectFit: "cover",
-            }}
-          /> */}
-          <img
-            src={project.image || "/default-project-image.jpg"}
+          {/* <img
+            src={
+              project?.images[project?.images.length - 1] ||
+              "/default-project-image.jpg"
+            }
             alt={`preview-image`}
             style={{
               width: "100%",
@@ -163,10 +179,10 @@ const ProjectDetails = ({
               objectFit: "cover",
               borderRadius: "4px",
             }}
-          />
+          /> */}
 
-          {project?.additionalImages &&
-            project?.additionalImages.map((image, index) => (
+          {project?.images &&
+            project?.images.map((image, index) => (
               <Box
                 key={index}
                 sx={{
@@ -174,7 +190,7 @@ const ProjectDetails = ({
                   display: "inline-block",
                   // width: index !== 0 &&"100px",
                   // height: index !== 0 &&"100px",
-                  // gridColumn: index === 0 && "1/-1",
+                  gridColumn: index === 0 && "1/-1",
                 }}
               >
                 <img
@@ -211,38 +227,12 @@ const ProjectDetails = ({
               >
                 {project.title}
               </Typography>
-              <Chip
-                label={project.status}
-                sx={{
-                  height: "unset",
-                  backgroundColor:
-                    project.status === "In Progress" ||
-                    project.status === "In Review"
-                      ? "#BB994133"
-                      : project.status === "Finished"
-                      ? "#7C9A4733"
-                      : "#BB484133",
-                  color:
-                    project.status === "In Progress" ||
-                    project.status === "In Review"
-                      ? "#BB9941"
-                      : project.status === "Finished"
-                      ? "#7C9A47"
-                      : "#BB4841",
-                  borderRadius: "4px",
-                  fontSize: "12px",
-                  fontWeight: "500",
-                  textTransform: "uppercase",
-                  "& .MuiChip-label.MuiChip-labelMedium": {
-                    padding: "4px 8px",
-                  },
-                }}
-              />
+              <ProjectStatusChip status={project.status} />
             </Box>
-            {project.dueDate && (
+            {project.startDate && (
               <Box sx={{ display: "flex", gap: 1, mt: 1, flexWrap: "wrap" }}>
                 <Chip
-                  label={"DL: " + project.dueDate}
+                  label={"Start Date: " + formatDate(project.startDate)}
                   sx={{
                     height: "unset",
                     backgroundColor: "#BB994133",
@@ -255,11 +245,7 @@ const ProjectDetails = ({
                       padding: "4px 8px",
                     },
                   }}
-                >
-                  <Typography variant="caption">
-                    DL: {project.dueDate}
-                  </Typography>
-                </Chip>
+                />
               </Box>
             )}
           </Box>
@@ -300,19 +286,22 @@ const ProjectDetails = ({
               >
                 {quoteCategories.map(
                   (category) =>
-                    category.data.length > 0 && (
+                    category?.data &&
+                    category?.data.length > 0 && (
                       <Box
                         key={category.name}
                         sx={{
                           display: "flex",
-                          alignItems: "center",
+                          flexDirection: "column",
+                          alignItems: "start",
                           justifyContent: "space-between",
+                          marginBottom: "12px",
                         }}
                       >
                         <Typography variant="detailsText" sx={{ mb: 0 }}>
                           {category.name}
                         </Typography>
-                        {category.data.map((item, index) => (
+                        {/* {category.data.map((item, index) => (
                           <Typography key={index} variant="detailsText">
                             {item?.material}
                             {item?.sku},{" "}
@@ -320,20 +309,78 @@ const ProjectDetails = ({
                               item?.width + "X" + item?.height + ","}{" "}
                             {item?.quantity} pcs
                           </Typography>
+                        ))} */}
+                        {category?.data.map((item, index) => (
+                          <Typography
+                            key={index}
+                            variant="body1"
+                            sx={{ mb: 0.5 }}
+                          >
+                            {item.material && `${item.material}, `}
+                            {item.color && `${item.color}, `}
+                            {item.sku.skuCode && `SKU: ${item.sku.skuCode}, `}
+                            {item.sku.catalog &&
+                              `Catalog: ${item.sku.catalog}, `}
+                            {item.width &&
+                              item.height &&
+                              `${item.width}x${item.height} inches, `}
+                            {item.quantity && `${item.quantity} pcs`}
+                            {category.name === "handles" &&
+                              item.sku.productNumber &&
+                              ` (${item.sku.productNumber})`}
+                          </Typography>
                         ))}
                       </Box>
                     )
                 )}
               </Box>
             ) : (
-              <Typography variant="detailsText">N/A</Typography>
+              <Typography variant="detailsText">
+                No quote details available.
+              </Typography>
             )}
           </Box>
+          <Divider />
+          {/* Shipping cost */}
+          <Box>
+            <Typography variant="detailsHeading">Shipping Cost:</Typography>
+            <Typography variant="detailsText">
+              ${Math.round(quote.price * 0.12).toFixed(2)}
+            </Typography>
+          </Box>
+          <Divider />
+          {/* Priority cost */}
+          <Box>
+            <Typography variant="detailsHeading">Priority Cost:</Typography>
+            <Typography variant="detailsText">
+              $
+              {project.priority === "High"
+                ? (quote.price * 0.1).toFixed(2)
+                : "0.00"}
+            </Typography>
+          </Box>
+
           <Divider />
           <Box>
             <Typography variant="detailsHeading">Quote</Typography>
             <Typography variant="detailsText">
               {quote?.price ? `$${quote.price}` : "N/A"}
+            </Typography>
+          </Box>
+          <Divider />
+          {/* Total quote price including shipping and priority costs */}
+          <Box
+            sx={{
+              mb: "120px",
+            }}
+          >
+            <Typography variant="detailsHeading">Total Quote Price:</Typography>
+            <Typography variant="detailsText">
+              $
+              {Math.round(
+                quote.price *
+                  (1 + 0.12 + (project.priority === "High" ? 0.1 : 0))
+              ).toFixed(2)}
             </Typography>
           </Box>
         </Box>
