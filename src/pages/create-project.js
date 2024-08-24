@@ -66,19 +66,19 @@ const CreateProject = () => {
     formData.append("priority", priority);
     // formData.append("status", status);
     formData.append("startDate", startDate.toISOString());
-    console.log(" startDate.toISOString():", startDate.toISOString());
-    // const response = await fetch("/api/projects", {
-    //   method: "POST",
-    //   body: formData,
-    // });
 
-    // if (response.ok) {
-    //   setLoading(false);
-    //   router.push("/");
-    // } else {
-    //   console.error("Failed to create project");
-    //   setLoading(false);
-    // }
+    const response = await fetch("/api/projects", {
+      method: "POST",
+      body: formData,
+    });
+
+    if (response.ok) {
+      setLoading(false);
+      router.push("/");
+    } else {
+      console.error("Failed to create project");
+      setLoading(false);
+    }
   };
 
   const handleGoBack = () => {
