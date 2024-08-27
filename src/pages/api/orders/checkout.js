@@ -50,7 +50,7 @@ export default async function handler(req, res) {
           },
         ],
         mode: "payment",
-        success_url: `${req.headers.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
+        success_url: `${req.headers.origin}/success?session_id=${stripeSession.id}`,
         cancel_url: `${req.headers.origin}/cancelled`,
         metadata: {
           orderId: order._id.toString(),
