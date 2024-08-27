@@ -35,33 +35,39 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: "Invalid payment type" });
       }
 
-      const stripeSession = await stripe.checkout.sessions.create({
-        payment_method_types: ["card"],
-        line_items: [
-          {
-            price_data: {
-              currency: "usd",
-              product_data: {
-                name: `Payment for Order #${order._id} - ${paymentType} payment`,
+      const stripeSession = await stripe.checkout.sessions
+        .create({
+          payment_method_types: ["card"],
+          line_items: [
+            {
+              price_data: {
+                currency: "usd",
+                product_data: {
+                  name: `Payment for Order #${order._id} - ${paymentType} payment`,
+                },
+                unit_amount: Math.round(amount * 100), // Stripe expects the amount in cents
               },
-              unit_amount: Math.round(amount * 100), // Stripe expects the amount in cents
+              quantity: 1,
             },
-            quantity: 1,
+          ],
+          mode: "payment",
+          success_url: `${req.headers.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
+          cancel_url: `${req.headers.origin}/cancelled`,
+          metadata: {
+            orderId: order._id.toString(),
+            paymentType,
           },
-        ],
-        mode: "payment",
-        success_url: `${req.headers.origin}/success?session_id=${stripeSession.id}`,
-        cancel_url: `${req.headers.origin}/cancelled`,
-        metadata: {
-          orderId: order._id.toString(),
-          paymentType,
-        },
-      });
+        })
+        .catch((err) => {
+          console.error("Stripe session creation failed:", err);
+          throw new Error("Failed to create Stripe session");
+        });
       // Log the session ID to ensure it's generated
       console.log("Stripe Session ID:", stripeSession.id);
 
       if (!stripeSession.id) {
-        throw new Error("Stripe session ID not generated");
+        console.error("Stripe session ID is undefined:", stripeSession);
+        throw new Error("Stripe session ID is undefined");
       }
       // Save the payment intent ID
       if (paymentType === "first") {
