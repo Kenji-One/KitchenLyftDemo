@@ -90,7 +90,7 @@ const CreateProject = () => {
       <Box
         component="form"
         onSubmit={handleSubmit}
-        sx={{ maxWidth: 974, mx: "auto", mt: 4, px: 2 }}
+        sx={{ maxWidth: 974, mx: "auto", mt: { xs: "82px", lg2: 4 }, px: 2 }}
         encType="multipart/form-data"
       >
         <Box
@@ -99,11 +99,15 @@ const CreateProject = () => {
             justifyContent: "space-between",
             alignItems: "center",
             mb: 4,
+            gap: "8xp",
           }}
         >
           <Typography
             variant="h5"
-            sx={{ fontSize: "24px", textTransform: "uppercase" }}
+            sx={{
+              fontSize: { xs: "20px", xs2: "24px" },
+              textTransform: "uppercase",
+            }}
           >
             Create a Project
           </Typography>
@@ -117,14 +121,22 @@ const CreateProject = () => {
           </Button>
         </Box>
         <Box
-          sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px" }}
+          sx={{
+            display: "grid",
+            gridTemplateColumns: { xs: "1fr", md2: "1fr 1fr" },
+            gap: "24px",
+          }}
         >
           <Box sx={{ mb: "24px" }}>
             <Box
               sx={{
                 display: "grid",
-                gridTemplateColumns: "1fr 1fr 1fr",
-                gridTemplateRows: "266px 113px",
+                gridTemplateColumns: {
+                  xs: "1fr",
+                  xs3: "1fr 1fr",
+                  sm: "1fr 1fr 1fr",
+                },
+                gridTemplateRows: { xs: "unset", md2: "266px 113px" },
                 gap: "5px",
               }}
             >
@@ -165,7 +177,7 @@ const CreateProject = () => {
               ))}
               <Box
                 sx={{
-                  maxHeight: "113px",
+                  maxHeight: { xs: "100%", md2: "113px" },
                   border: "1px dashed #ccc",
                   borderRadius: "4px",
                   padding: "16px",
@@ -176,7 +188,7 @@ const CreateProject = () => {
                   height: "150px",
                   display: "flex",
                   flexDirection: "column",
-                  justifyContent: "end",
+                  justifyContent: { xs: "center", md2: "end" },
                   alignItems: "center",
                   backgroundColor: "rgba(50, 55, 64, 0.1)",
                   "&:hover": {
@@ -315,7 +327,11 @@ const CreateProject = () => {
           variant="contained"
           color="primary"
           onClick={handleGoBack}
-          sx={{ position: "absolute", top: "32px", left: "32px" }}
+          sx={{
+            position: "absolute",
+            top: { xs: "24px", lg2: "32px" },
+            left: { xs: "16px", md2: "32px" },
+          }}
         >
           Go Back
         </Button>

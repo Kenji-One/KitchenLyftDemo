@@ -24,7 +24,6 @@ import { authOptions } from "@/pages/api/auth/[...nextauth]";
 const EditProject = ({ session2 }) => {
   const router = useRouter();
   const { id } = router.query;
-  console.log(session2);
   const [images, setImages] = useState([]);
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
@@ -38,7 +37,7 @@ const EditProject = ({ session2 }) => {
   useEffect(() => {
     if (!id) return;
     setLoading(true);
-    fetch(`/api/projects/${id}`)
+    fetch(`/api/project/${id}`)
       .then((res) => res.json())
       .then((data) => {
         const project = data.project;

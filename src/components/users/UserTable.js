@@ -23,6 +23,8 @@ import {
   FormControl,
   InputLabel,
   OutlinedInput,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import GroupRemoveIcon from "@mui/icons-material/GroupRemove";
 import CustomInput from "../helpers/CustomInput";
@@ -37,7 +39,11 @@ const UserTable = ({ users, handleRemoveUser, handleAddUser }) => {
     password: "",
     role: "",
   });
-
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "info",
+  });
   const handleClickOpen = () => {
     setOpen(true);
   };
@@ -63,15 +69,35 @@ const UserTable = ({ users, handleRemoveUser, handleAddUser }) => {
     });
   };
 
-  const handleSubmit = () => {
-    handleAddUser(newUser);
-    setNewUser({
-      username: "",
-      email: "",
-      password: "",
-      role: "",
+  const handleSubmit = async () => {
+    // Check if the email already exists
+    const response = await fetch("/api/check-email", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email: newUser.email }),
     });
-    handleClose();
+    const data = await response.json();
+
+    if (data.exists) {
+      // Email already exists, show error message
+      setSnackbar({
+        open: true,
+        message: "Email already exists!",
+        severity: "error",
+      });
+    } else {
+      // Email does not exist, proceed with adding the user
+      handleAddUser(newUser);
+      setNewUser({
+        username: "",
+        email: "",
+        password: "",
+        role: "",
+      });
+      handleClose();
+    }
   };
 
   const handleConfirmDelete = () => {
@@ -219,8 +245,8 @@ const UserTable = ({ users, handleRemoveUser, handleAddUser }) => {
               </MenuItem>
               <MenuItem value="CorporateAdmin">Corporate Admin</MenuItem>
               <MenuItem value="CorporateUser">Corporate User</MenuItem>
-              <MenuItem value="FranchiseeAdmin">Franchisee Admin</MenuItem>
-              <MenuItem value="FranchiseeUser">Franchisee User</MenuItem>
+              <MenuItem value="FranchiseAdmin">Franchise Admin</MenuItem>
+              <MenuItem value="FranchiseUser">Franchise User</MenuItem>
             </Select>
           </FormControl>
         </DialogContent>
@@ -273,6 +299,19 @@ const UserTable = ({ users, handleRemoveUser, handleAddUser }) => {
           </Button>
         </DialogActions>
       </Dialog>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar({ ...snackbar, open: false })}
+      >
+        <Alert
+          onClose={() => setSnackbar({ ...snackbar, open: false })}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };

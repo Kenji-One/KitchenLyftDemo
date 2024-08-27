@@ -20,7 +20,8 @@ const ProjectCard = ({ project, onClick, key }) => {
         boxShadow: "none",
         padding: "0",
         cursor: "pointer",
-        maxWidth: "224px",
+        maxWidth: { xs: "100%", xs2: "224px" },
+        marginRight: "16px",
       }}
       onClick={onClick}
     >
@@ -29,10 +30,16 @@ const ProjectCard = ({ project, onClick, key }) => {
         height="auto"
         image={project.images[0] || "/images/kitchen1.jpg"}
         alt={project.title}
-        sx={{ height: "138px", maxWidth: "224px", borderRadius: "4px" }}
+        sx={{
+          height: { xs: "auto", xs2: "138px" },
+          maxWidth: { xs: "100%", xs2: "224px" },
+          borderRadius: "4px",
+        }}
       />
 
-      <CardContent sx={{ padding: 0, paddingTop: "10px" }}>
+      <CardContent
+        sx={{ padding: 0, paddingTop: "10px", paddingBottom: "12 !important" }}
+      >
         <Box
           sx={{
             display: "flex",

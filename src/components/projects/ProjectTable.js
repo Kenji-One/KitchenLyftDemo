@@ -11,10 +11,17 @@ import {
   Paper,
   Chip,
   Avatar,
+  IconButton,
 } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
 import ProjectStatusChip from "./ProjectStatusChip";
 
-const ProjectTable = ({ projects, onProjectClick }) => {
+const ProjectTable = ({
+  projects,
+  onProjectClick,
+  userRole,
+  onProjectDelete,
+}) => {
   return (
     <TableContainer component={Paper} sx={{ boxShadow: "none" }}>
       <Table
@@ -22,6 +29,7 @@ const ProjectTable = ({ projects, onProjectClick }) => {
         sx={{
           borderTop: 1,
           borderColor: "#3237401A",
+          minWidth: "1000px",
         }}
       >
         <TableHead>
@@ -37,6 +45,8 @@ const ProjectTable = ({ projects, onProjectClick }) => {
             <TableCell>Creator</TableCell>
             <TableCell>Location</TableCell>
             <TableCell>Quote</TableCell>
+            {(userRole === "CorporateAdmin" ||
+              userRole === "FranchiseAdmin") && <TableCell>Delete</TableCell>}
           </TableRow>
         </TableHead>
         <TableBody>
@@ -79,6 +89,19 @@ const ProjectTable = ({ projects, onProjectClick }) => {
               <TableCell>
                 {project.quote ? `$${project.quote}` : "N/A"}
               </TableCell>
+              {(userRole === "CorporateAdmin" ||
+                userRole === "FranchiseAdmin") && (
+                <TableCell>
+                  <IconButton
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevents row click event
+                      onProjectDelete(project._id);
+                    }}
+                  >
+                    <DeleteIcon sx={{ color: "rgba(187, 72, 65, 0.9)" }} />
+                  </IconButton>
+                </TableCell>
+              )}
             </TableRow>
           ))}
         </TableBody>

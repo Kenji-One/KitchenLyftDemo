@@ -1,10 +1,8 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import dynamic from "next/dynamic";
-
-const Carousel = dynamic(() => import("react-slick"), { ssr: false });
 import { useRouter } from "next/navigation";
+import { io } from "socket.io-client";
 import {
   AppBar,
   Toolbar,
@@ -19,7 +17,11 @@ import {
   Popover,
   MenuItem,
   Divider,
+  Menu,
 } from "@mui/material";
+
+const Carousel = dynamic(() => import("react-slick"), { ssr: false });
+
 import ProjectCard from "@/components/projects/ProjectCard";
 import AddBoxIcon from "@mui/icons-material/AddBox";
 import Projects from "@/components/projects/Projects";
@@ -44,6 +46,8 @@ import Loader from "@/utils/Loader";
 import EastIcon from "@mui/icons-material/East";
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
 import ChatsList from "@/components/messages/ChatsList";
+import MenuIcon from "@mui/icons-material/Menu";
+import ForumIcon from "@mui/icons-material/Forum";
 
 const Dashboard = ({ session2 }) => {
   const router = useRouter();
@@ -58,11 +62,96 @@ const Dashboard = ({ session2 }) => {
   const [loading, setLoading] = useState(false);
   const [chats, setChats] = useState([]);
   const [selectedChat, setSelectedChat] = useState(null);
+  const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = useState(null);
+  const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
+  const [socket, setSocket] = useState(null);
+  const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
+
+  useEffect(() => {
+    // Initialize the socket connection when the component mounts
+    fetch("/api/socket");
+  }, []);
+
+  // Initialize Socket.IO connection
+  useEffect(() => {
+    const newSocket = io(); // Connect to the server
+    setSocket(newSocket);
+
+    // Log socket connection status
+    newSocket.on("connect", () => {
+      console.log("Socket connected:", newSocket.id);
+    });
+
+    newSocket.on("disconnect", () => {
+      console.log("Socket disconnected");
+    });
+
+    return () => {
+      newSocket.disconnect(); // Clean up the socket connection when the component unmounts
+    };
+  }, []);
+
+  const handleMobileMenuClose = () => {
+    setMobileMoreAnchorEl(null);
+  };
+
+  const handleMobileMenuOpen = (event) => {
+    setMobileMoreAnchorEl(event.currentTarget);
+  };
+
+  const mobileMenuId = "primary-search-account-menu-mobile";
+
+  const renderMobileMenu = (
+    <Menu
+      anchorEl={mobileMoreAnchorEl}
+      anchorOrigin={{ vertical: "top", horizontal: "right" }}
+      id={mobileMenuId}
+      keepMounted
+      transformOrigin={{ vertical: "top", horizontal: "right" }}
+      open={isMobileMenuOpen}
+      onClose={handleMobileMenuClose}
+    >
+      <MenuItem onClick={() => handleChange(null, 0)}>
+        <IconButton color="inherit">
+          <DashboardIcon />
+        </IconButton>
+        <p>Dashboard</p>
+      </MenuItem>
+      <MenuItem onClick={() => handleChange(null, 1)}>
+        <IconButton color="inherit">
+          <EventNoteIcon />
+        </IconButton>
+        <p>Projects</p>
+      </MenuItem>
+      <MenuItem onClick={() => handleChange(null, 2)}>
+        <IconButton color="inherit">
+          <InventoryIcon />
+        </IconButton>
+        <p>Orders</p>
+      </MenuItem>
+      <MenuItem onClick={() => handleChange(null, 3)}>
+        <IconButton color="inherit">
+          <TextsmsIcon />
+        </IconButton>
+        <p>Messages</p>
+      </MenuItem>
+      {(session2.user.role === "CorporateAdmin" ||
+        session2.user.role === "FranchiseAdmin") && (
+        <MenuItem onClick={() => handleChange(null, 4)}>
+          <IconButton color="inherit">
+            <GroupIcon />
+          </IconButton>
+          <p>Users</p>
+        </MenuItem>
+      )}
+    </Menu>
+  );
 
   const handleChange = (event, newValue) => {
     selectedProject !== null && setSelectedProject(null);
     thereIsClickForQoute && setThereIsClickForQoute(false);
     setValue(newValue);
+    mobileMoreAnchorEl && setMobileMoreAnchorEl(null);
   };
   const letsGenerateQuote = (event, newValue) => {
     setThereIsClickForQoute(true);
@@ -151,6 +240,7 @@ const Dashboard = ({ session2 }) => {
       setSelectedProject(data.project);
       setQuote(data.quote);
       setChat(data.chat); // Fetch and set the chat data
+      setSelectedChat(data.chat);
       setValue(1);
       setLoading(false);
     } catch (error) {
@@ -159,6 +249,35 @@ const Dashboard = ({ session2 }) => {
         `Failed to fetch project details for project ${projectId}`,
         error
       );
+    }
+  };
+
+  const handleDeleteProject = async (projectId) => {
+    const confirmation = confirm(
+      "Are you sure you want to delete this project?"
+    );
+    if (!confirmation) return;
+
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/project/${projectId}`, {
+        method: "DELETE",
+      });
+      if (response.ok) {
+        alert("Project deleted successfully.");
+        setProjects((prev) =>
+          prev.filter((project) => project._id !== projectId)
+        );
+        router.refresh();
+      } else {
+        const errorMessage = await response.text();
+        throw new Error(errorMessage || "Failed to delete the project.");
+      }
+    } catch (error) {
+      console.error("Error deleting project:", error);
+      alert(error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -181,6 +300,7 @@ const Dashboard = ({ session2 }) => {
   const handleAddUser = async (newUser) => {
     try {
       setLoading(true);
+      console.log("newUser:", newUser);
       const response = await fetch("/api/users", {
         method: "POST",
         headers: {
@@ -210,7 +330,7 @@ const Dashboard = ({ session2 }) => {
     prevArrow: <KeyboardBackspaceIcon />,
     responsive: [
       {
-        breakpoint: 1024,
+        breakpoint: 1250,
         settings: {
           slidesToShow: 3,
           slidesToScroll: 3,
@@ -218,7 +338,7 @@ const Dashboard = ({ session2 }) => {
         },
       },
       {
-        breakpoint: 600,
+        breakpoint: 1024,
         settings: {
           slidesToShow: 2,
           slidesToScroll: 2,
@@ -226,7 +346,30 @@ const Dashboard = ({ session2 }) => {
         },
       },
       {
-        breakpoint: 480,
+        breakpoint: 800,
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+        },
+      },
+      {
+        breakpoint: 700,
+        settings: {
+          slidesToShow: 3,
+          slidesToScroll: 1,
+          initialSlide: 3,
+        },
+      },
+      {
+        breakpoint: 550,
+        settings: {
+          slidesToShow: 2,
+          slidesToScroll: 2,
+          initialSlide: 2,
+        },
+      },
+      {
+        breakpoint: 400,
         settings: {
           slidesToShow: 1,
           slidesToScroll: 1,
@@ -241,21 +384,124 @@ const Dashboard = ({ session2 }) => {
     const data = await response.json();
     setValue(3);
     setSelectedChat(data);
+    socket.emit("join_project", data.projectId);
     setLoading(false);
+  };
+
+  const fetchUnreadMessagesCount = async () => {
+    try {
+      const res = await fetch("/api/unread-messages");
+      if (res.ok) {
+        const data = await res.json();
+        console.log("Unread messages:", data.unreadCount);
+        setUnreadMessagesCount(data.unreadCount);
+      } else {
+        console.error("Failed to fetch unread messages count");
+      }
+    } catch (error) {
+      console.error("Error fetching unread messages count:", error);
+    }
   };
 
   const fetchChats = async () => {
     setLoading(true);
     const response = await fetch("/api/messages");
     const data = await response.json();
+    console.log("chats daataaaaa:", data);
     setChats(data);
     setLoading(false);
   };
 
   useEffect(() => {
+    fetchUnreadMessagesCount();
     fetchChats();
   }, []);
 
+  useEffect(() => {
+    if (selectedChat && socket) {
+      socket.emit(
+        "join_project",
+        selectedChat.projectId?._id || selectedChat.projectId
+      );
+      console.log(
+        "Joined project room:",
+        selectedChat.projectId?._id || selectedChat.projectId
+      );
+
+      return () => {
+        socket.off("join_project");
+      };
+    }
+  }, [selectedChat, socket]);
+
+  // Listen for incoming messages and update unread messages count
+  useEffect(() => {
+    if (socket) {
+      socket.on("message", async (updatedChat) => {
+        console.log("Received updated chat:", updatedChat);
+        setSelectedChat((prevChat) => ({
+          ...prevChat,
+          messages: [
+            ...prevChat.messages,
+            updatedChat.messages[updatedChat.messages.length - 1],
+          ],
+        }));
+
+        setChats((prevChats) =>
+          prevChats.map((chat) =>
+            chat._id === updatedChat._id
+              ? { ...chat, messages: updatedChat.messages }
+              : chat
+          )
+        );
+        // chat && console.log("chaatoo:", chat);
+        chat &&
+          setChat((chat) =>
+            chat._id === updatedChat._id
+              ? { ...chat, messages: updatedChat.messages }
+              : chat
+          );
+      });
+
+      socket.on("update_unread_count", async () => {
+        try {
+          const res = await fetch("/api/unread-messages");
+          if (res.ok) {
+            const data = await res.json();
+            console.log("Unread messages:", data.unreadCount);
+            setUnreadMessagesCount(data.unreadCount);
+          } else {
+            console.error("Failed to fetch unread messages count");
+          }
+        } catch (error) {
+          console.error("Error fetching unread messages count:", error);
+        }
+      });
+
+      return () => {
+        socket.off("message");
+        socket.off("update_unread_count");
+      };
+    }
+  }, [socket]);
+
+  const handleSend = async (text) => {
+    if (socket) {
+      console.log(
+        "selectedChat.projectId:",
+        selectedChat.projectId,
+        "text",
+        text
+      );
+      socket.emit("new_message", {
+        projectId: selectedChat.projectId,
+        text,
+        senderId: session2.user.id,
+      });
+    } else {
+      console.error("Socket is not initialized");
+    }
+  };
   return (
     <>
       <Loader open={loading} />
@@ -269,16 +515,53 @@ const Dashboard = ({ session2 }) => {
           boxShadow: "none",
           borderBottom: 1,
           borderColor: "#32374033",
+          overflow: "hidden",
         }}
       >
-        <Toolbar sx={{ justifyContent: "space-between", gap: "32px" }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: "32px" }}>
+        <Toolbar
+          sx={{
+            justifyContent: "space-between",
+            gap: { xs: "8px", sm: "16px", md: "12px", lg: "32px" },
+            px: { xs: "16px", sm3: "24px" },
+            flexWrap: "nowrap",
+          }}
+        >
+          <Button
+            edge="start"
+            color="inherit"
+            aria-label="open drawer"
+            sx={{
+              display: { xs: "flex", md: "none" },
+              backgroundColor: "#3237401A",
+              "&:hover": {
+                backgroundColor: "rgba(50, 55, 64, 0.2)",
+              },
+              minWidth: "unset",
+              maxHeight: "43px",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "12px",
+            }}
+            onClick={handleMobileMenuOpen}
+          >
+            <MenuIcon />
+          </Button>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: { xs: "8px", sm: "16px", md: "24px", lg: "32px" },
+              flex: { xs: "unset", md: "1 0 auto" },
+            }}
+          >
             <img
               src={"/logo 1.svg"}
               alt="Logo of the Company"
               className="kitchen-logo"
+              // style={{ width: "auto", height: "34px" }}
             />
             <span
+              className="MuiBoxBorderSpan"
               style={{
                 height: "43px",
                 width: "1px",
@@ -288,13 +571,19 @@ const Dashboard = ({ session2 }) => {
             <Tabs
               value={value}
               onChange={handleChange}
-              aria-label="header tabs"
+              variant="scrollable"
+              scrollButtons="auto"
+              aria-label="header scrollable tabs"
               sx={{
+                "& .MuiTabs-scroller": {
+                  maxWidth: { md: "300px", lg2: "916px" },
+                },
                 "& .MuiButtonBase-root.MuiTab-root.MuiTab-textColorPrimary": {
                   padding: "24px 0",
                   flexDirection: "row",
                   alignItems: "center",
                   gap: "12px",
+                  flexShrink: 0,
                 },
                 "& .MuiButtonBase-root.MuiTab-root.MuiTab-textColorPrimary, .MuiButtonBase-root.MuiTab-root.MuiTab-textColorPrimary > svg":
                   {
@@ -308,8 +597,9 @@ const Dashboard = ({ session2 }) => {
                   backgroundColor: "#9A7F49",
                 },
                 "& .MuiTabs-flexContainer": {
-                  gap: "32px",
+                  gap: { xs: "4px", sm: "12px", md: "32px" },
                 },
+                display: { xs: "none", md: "flex" },
               }}
             >
               <Tab
@@ -337,27 +627,57 @@ const Dashboard = ({ session2 }) => {
                 label="Orders"
               />
               <Tab
+                sx={{ margin: "0 !important" }}
                 icon={
-                  <TextsmsIcon
-                    sx={{ color: "#323740", margin: "0 !important" }}
-                  />
+                  <Box
+                    sx={{
+                      position: "relative",
+                      margin: "0 !important",
+                      display: "flex",
+                    }}
+                  >
+                    <TextsmsIcon
+                      sx={{ color: "#323740", margin: "0 !important" }}
+                    />
+                    {unreadMessagesCount > 0 && (
+                      <Box
+                        sx={{
+                          position: "absolute",
+                          top: "-7px",
+                          right: "-8px",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          width: "18px",
+                          height: "18px",
+                          borderRadius: "50%",
+                          backgroundColor: "red",
+                          color: "white",
+                          fontSize: "0.75rem",
+                        }}
+                      >
+                        {unreadMessagesCount >= 10 ? "9+" : unreadMessagesCount}
+                      </Box>
+                    )}
+                  </Box>
                 }
                 label="Messages"
               />
 
-              {session2.user.role === "CorporateAdmin" && (
+              {(session2.user.role === "CorporateAdmin" ||
+                session2.user.role === "FranchiseAdmin") && (
                 <Tab
                   icon={
                     <GroupIcon
                       sx={{ color: "#323740", margin: "0 !important" }}
                     />
                   }
-                  label="Corporate Users"
+                  label="Users"
                 />
               )}
             </Tabs>
           </Box>
-          <Box sx={{ display: "flex", alignItems: "center" }}>
+          <Box sx={{ display: "flex", alignItems: "center", flexShrink: 0 }}>
             <Button
               startIcon={<AddBoxIcon />}
               onClick={handleAddProject}
@@ -365,13 +685,25 @@ const Dashboard = ({ session2 }) => {
                 bgcolor: "rgba(208, 180, 123, 0.2)",
                 color: "#9A7F49",
                 textTransform: "none",
+                maxHeight: { xs: "43px", sm: "unset" },
                 lineHeight: "19.2px",
-                padding: "12px 16px",
-                mx: 3,
+                padding: { xs: "12px", sm: "12px 16px" },
+                minWidth: "unset",
+                marginRight: { xs: 1, sm: 2, lg: 3 },
                 "&:hover": { bgcolor: "rgba(208, 180, 123, 0.4)" },
+                "& .MuiButton-startIcon": {
+                  // Ensures the icon is still displayed
+                  marginRight: { xs: "0 !important", sm: "8px !important" }, // Remove margin right on small screens
+                  marginLeft: { xs: "0 !important", sm: "-4px !important" }, // Remove margin right on small screens
+                },
+                // Responsive visibility for the button text
+                "& span.MuiButtonText": {
+                  fontSize: { xs: 0, sm: "16px" }, // Hide text on xs, show on sm and above
+                  visibility: { xs: "hidden", sm: "visible" }, // Ensure text is not only reduced in size but also hidden
+                },
               }}
             >
-              Create Project
+              <span className="MuiButtonText">Create Project</span>
             </Button>
             <Box
               sx={{
@@ -398,6 +730,7 @@ const Dashboard = ({ session2 }) => {
             </Box>
           </Box>
         </Toolbar>
+        {renderMobileMenu}
       </AppBar>
       <Container
         maxWidth="xl"
@@ -406,13 +739,23 @@ const Dashboard = ({ session2 }) => {
           paddingRight: selectedProject || value === 0 ? "0 !important" : "",
           paddingTop: selectedProject || value === 0 ? "0 !important" : "",
           paddingBottom: selectedProject || value === 0 ? "0 !important" : "",
-          height:
-            selectedProject || thereIsClickForQoute || value !== 0
+          minHeight:
+            selectedProject ||
+            thereIsClickForQoute ||
+            value !== 0 ||
+            value !== 3
               ? "unset"
-              : "calc(100vh - 72px) !important",
+              : "calc(100vh - 74px) !important",
         }}
       >
-        <Box sx={{ height: "100%" }}>
+        <Box
+          sx={{
+            minHeight:
+              selectedProject || thereIsClickForQoute || value !== 0
+                ? "unset"
+                : "calc(100vh - 74px) !important",
+          }}
+        >
           {selectedProject ? (
             <>
               {!thereIsClickForQoute ? (
@@ -422,6 +765,7 @@ const Dashboard = ({ session2 }) => {
                   chat={chat}
                   setSelectedProject={setSelectedProject}
                   letsGenerateQuote={letsGenerateQuote}
+                  handleSend={handleSend}
                 />
               ) : (
                 <GenerateQuoteForm
@@ -436,10 +780,16 @@ const Dashboard = ({ session2 }) => {
               {value === 0 && (
                 <Box
                   sx={{
-                    height: "100%",
+                    minHeight:
+                      selectedProject || thereIsClickForQoute || value !== 0
+                        ? "unset"
+                        : "calc(100vh - 72px) !important",
                     display: "grid",
-                    gridTemplateColumns: "3.4fr minmax(390px, 1.6fr)",
-                    gap: "54px",
+                    gridTemplateColumns: {
+                      xs: "unset",
+                      sm2: "3.4fr minmax(390px, 1.6fr)",
+                    },
+                    gap: { xs: "16px", md: "24px", lg2: "38px" },
                   }}
                 >
                   <Box
@@ -450,16 +800,59 @@ const Dashboard = ({ session2 }) => {
                       flexDirection: "column",
                     }}
                   >
-                    <Typography
-                      variant="h5"
+                    <Box
                       sx={{
-                        my: "32px",
-                        fontSize: "24px",
-                        textTransform: "uppercase",
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        gap: "12px",
+                        paddingRight: "16px",
                       }}
                     >
-                      Welcome, {session2.user.name}
-                    </Typography>
+                      <Typography
+                        variant="h5"
+                        sx={{
+                          my: "32px",
+                          fontSize: "24px",
+                          textTransform: "uppercase",
+                        }}
+                      >
+                        Welcome, {session2.user.name}
+                      </Typography>
+                      <Box
+                        sx={{
+                          display: { xs: "flex", sm2: "none" },
+                          alignItems: "center",
+                          position: "relative",
+                          cursor: "pointer",
+                        }}
+                        onClick={() => handleChange(null, 3)} // This will switch to the Messages tab
+                      >
+                        <ForumIcon sx={{ color: "#323740" }} />
+                        {unreadMessagesCount > 0 && (
+                          <Box
+                            sx={{
+                              position: "absolute",
+                              top: "-7px",
+                              right: "-8px",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              width: "18px",
+                              height: "18px",
+                              borderRadius: "50%",
+                              backgroundColor: "red",
+                              color: "white",
+                              fontSize: "0.75rem",
+                            }}
+                          >
+                            {unreadMessagesCount >= 10
+                              ? "9+"
+                              : unreadMessagesCount}
+                          </Box>
+                        )}
+                      </Box>
+                    </Box>
                     <Box
                       sx={{
                         display: "flex",
@@ -476,31 +869,48 @@ const Dashboard = ({ session2 }) => {
                       </Typography>
                     </Box>
 
-                    <Carousel {...settings}>
-                      {projects.map((project, index) => (
-                        <ProjectCard
-                          key={index}
-                          project={project}
-                          onClick={() => handleProjectClick(project._id)}
-                        />
-                      ))}
-                    </Carousel>
+                    {projects.length > 0 ? (
+                      <Carousel {...settings}>
+                        {projects.map((project, index) => (
+                          <ProjectCard
+                            key={index}
+                            project={project}
+                            onClick={() => handleProjectClick(project._id)}
+                          />
+                        ))}
+                      </Carousel>
+                    ) : (
+                      <Typography variant="h6">No projects</Typography>
+                    )}
                     <Typography
                       variant="body1"
                       sx={{
                         fontWeight: "600",
                         color: "#32374099",
                         marginTop: "auto",
-                        marginBottom: "44px",
+                        marginBottom: { xs: "24px", sm: "44px" },
                       }}
                     >
                       2024 © Kitchen Lyft, All rights reserved
                     </Typography>
                   </Box>
-                  <Box sx={{ borderLeft: 1, borderColor: "#32374033" }}>
+                  <Box
+                    sx={{
+                      borderLeft: 1,
+                      borderColor: "#32374033",
+                      display: { xs: "none", sm2: "block" },
+                    }}
+                  >
                     <ChatsList
                       chats={chats}
-                      fetchMessages={fetchMessages}
+                      fetchMessages={(projectId) => {
+                        if (socket) {
+                          fetchMessages(projectId);
+                          socket.emit("join_project", projectId);
+                        } else {
+                          console.error("Socket is not initialized");
+                        }
+                      }}
                       tabValue={0}
                     />
                   </Box>
@@ -510,6 +920,8 @@ const Dashboard = ({ session2 }) => {
                 <Projects
                   projects={projects}
                   onProjectClick={handleProjectClick}
+                  userRole={session2.user.role}
+                  handleDeleteProject={handleDeleteProject}
                 />
               )}
               {value === 2 && <Orders />}
@@ -519,6 +931,8 @@ const Dashboard = ({ session2 }) => {
                   setSelectedChat={setSelectedChat}
                   chats={chats}
                   setChats={setChats}
+                  fetchMessages={fetchMessages}
+                  handleSend={handleSend}
                 />
               )}
 

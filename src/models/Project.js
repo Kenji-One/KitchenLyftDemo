@@ -37,9 +37,9 @@ const projectSchema = new mongoose.Schema({
       "Shipped",
       "Order Received",
       "Completed",
-      "In progress",
+      "In Progress",
     ],
-    default: "In progress",
+    default: "In Progress",
   },
 
   quotes: [

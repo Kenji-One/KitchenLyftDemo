@@ -207,6 +207,7 @@ const handler = async (req, res) => {
           project.startDate = startDate ?? project.startDate;
 
           const updatedProject = await project.save();
+          console.log("project details was changed from projects.js");
           res.status(200).json(updatedProject);
         } catch (error) {
           console.error("Error updating project:", error);
@@ -214,41 +215,9 @@ const handler = async (req, res) => {
         }
       });
       break;
-    case "DELETE":
-      try {
-        const { id } = req.body;
-        const project = await Project.findById(id);
-        if (!project) {
-          return res.status(404).json({ message: "Project not found" });
-        }
-        if (project.user_id.toString() !== session.user.id) {
-          return res.status(403).json({ message: "Forbidden" });
-        }
-
-        // Remove the images from Cloudinary if they exist
-        if (project.images && project.images.length > 0) {
-          const deletePromises = project.images.map((imgUrl) => {
-            const publicId = imgUrl.split("/").pop().split(".")[0]; // Extract publicId from URL
-            return cloudinary.uploader.destroy(publicId);
-          });
-          await Promise.all(deletePromises);
-        }
-
-        // Delete the chat associated with the project
-        await Chat.findOneAndDelete({ projectId: id });
-
-        // Delete the quote associated with the project
-        await Quote.findOneAndDelete({ projectId: id });
-
-        await project.remove();
-        res.status(200).json({ message: "Project and its images deleted" });
-      } catch (error) {
-        res.status(500).json({ message: "Error deleting project", error });
-      }
-      break;
 
     default:
-      res.setHeader("Allow", ["GET", "POST", "PUT", "DELETE"]);
+      res.setHeader("Allow", ["GET", "POST", "PUT"]);
       res.status(405).end(`Method ${req.method} Not Allowed`);
       break;
   }

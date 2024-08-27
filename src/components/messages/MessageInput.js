@@ -22,7 +22,8 @@ const MessageInput = ({ onSend }) => {
         width: "100%",
         borderColor: "#3237401A",
         py: "16px",
-        paddingRight: "24px",
+        paddingRight: { xs: "16px", sm2: "24px" },
+        paddingBottom: { xs: "0", md: "16px" },
         position: "sticky",
         bottom: 0,
         backgroundColor: "white", // Ensure the background color matches the container's background
@@ -34,6 +35,7 @@ const MessageInput = ({ onSend }) => {
         onChange={(e) => setText(e.target.value)}
         placeholder="Write here..."
         minRows={1}
+        className="messagesTextArea"
         style={{
           width: "100%",
           resize: "none",

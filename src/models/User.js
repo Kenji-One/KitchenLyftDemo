@@ -13,13 +13,17 @@ const UserSchema = new mongoose.Schema(
       enum: [
         "CorporateAdmin",
         "CorporateUser",
-        "FranchiseeAdmin",
-        "FranchiseeUser",
+        "FranchiseAdmin",
+        "FranchiseUser",
       ],
       required: true,
     },
     resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date },
+    createdBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
   },
   { timestamps: true }
 );

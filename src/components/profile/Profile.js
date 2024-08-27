@@ -5,7 +5,7 @@ import { Box, Typography, Button, Avatar, Grid, Alert } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CustomInput from "@/components/helpers/CustomInput";
 import Loader from "@/utils/Loader";
-import { useSession } from "next-auth/react";
+import { useSession, getSession } from "next-auth/react";
 import DetailsCard from "./DetailsCard";
 import useReloadSession from "@/hooks/useReloadSession";
 
@@ -91,12 +91,20 @@ const Profile = () => {
 
     if (response.ok) {
       setSuccessMessage("Profile updated successfully!");
+
       await update({
         ...session,
-        user: { ...session.user, ...profileData },
+        user: {
+          ...session.user,
+          name: profileData.name,
+          email: profileData.email,
+        },
       });
+
+      reloadSession(); // Optional: to ensure the session data is fully reloaded
     } else {
-      setErrorMessage("Failed to update profile");
+      const errorData = await response.json();
+      setErrorMessage(errorData.message || "Failed to update profile");
     }
 
     setLoading(false);
@@ -200,7 +208,7 @@ const Profile = () => {
 
               <Button
                 variant="btnGray"
-                component="label"
+                type="submit"
                 sx={{ marginBottom: "0" }}
               >
                 Save changes
@@ -311,7 +319,7 @@ const Profile = () => {
               />
               <Button
                 variant="btnGray"
-                component="label"
+                type="submit"
                 sx={{ marginBottom: "0", marginTop: "8px" }}
               >
                 Save changes

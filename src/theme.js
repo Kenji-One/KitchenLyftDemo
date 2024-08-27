@@ -3,6 +3,23 @@ import { colors } from "@mui/material";
 import { createTheme } from "@mui/material/styles";
 
 const theme = createTheme({
+  breakpoints: {
+    values: {
+      xs: 0,
+      xss: 350,
+      xs2: 400,
+      xs3: 450,
+      xs4: 500,
+      sm: 600,
+      sm2: 700,
+      sm3: 800,
+      md: 940,
+      md2: 1024,
+      lg: 1200,
+      lg2: 1300,
+      xl: 1536,
+    },
+  },
   typography: {
     fontFamily: "Lato, Roboto, Arial, sans-serif",
     h1: {

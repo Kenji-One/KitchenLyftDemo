@@ -9,10 +9,17 @@ import {
   Chip,
 } from "@mui/material";
 import ProjectStatusChip from "../projects/ProjectStatusChip";
-const ChatsList = ({ chats, fetchMessages, tabValue }) => {
+const ChatsList = ({ chats, fetchMessages, tabValue, chatslistSX }) => {
   return (
     <Box
-      sx={{ borderRight: tabValue !== 0 ? 1 : "none", borderColor: "divider" }}
+      sx={{
+        borderRight: tabValue !== 0 ? 1 : "none",
+        borderColor: "divider",
+        height: "100%",
+        maxHeight: { xs: "unset", sm3: "calc(100vh - 74px)" }, // Set your desired max height
+        overflowY: "auto", // Make it scrollabl
+        ...chatslistSX,
+      }}
     >
       <Typography
         variant="h5"
@@ -83,8 +90,8 @@ const ChatsList = ({ chats, fetchMessages, tabValue }) => {
                     }}
                   >
                     {chat.projectId.user_id.username}{" "}
-                    <Box
-                      sx={{
+                    <span
+                      style={{
                         width: "6px",
                         minWidth: "6px",
                         height: "6px",
@@ -92,7 +99,7 @@ const ChatsList = ({ chats, fetchMessages, tabValue }) => {
                         backgroundColor: "#323740",
                         marginBottom: "1px",
                       }}
-                    ></Box>
+                    ></span>
                     {chat.projectId.title}
                   </Typography>
                 }

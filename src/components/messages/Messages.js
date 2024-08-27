@@ -1,55 +1,26 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { io } from "socket.io-client";
 import { useRouter } from "next/navigation";
-import {
-  Box,
-  Typography,
-  List,
-  ListItem,
-  ListItemText,
-  Avatar,
-  Chip,
-} from "@mui/material";
+import { Box, Typography, Avatar, Button } from "@mui/material";
 import MessageList from "@/components/messages/MessageList";
 import MessageInput from "@/components/messages/MessageInput";
 import Loader from "@/utils/Loader";
 import ChatsList from "./ChatsList";
 import ProjectStatusChip from "../projects/ProjectStatusChip";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
-const Messages = ({ selectedChat, setSelectedChat, chats, setChats }) => {
+const Messages = ({
+  selectedChat,
+  setSelectedChat,
+  chats,
+  setChats,
+  fetchMessages,
+  handleSend,
+}) => {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-
-  const fetchMessages = async (projectId) => {
-    setLoading(true);
-    const response = await fetch(`/api/messages?projectId=${projectId}`);
-    const data = await response.json();
-    setSelectedChat(data);
-    setLoading(false);
-  };
-
-  const handleSend = async (text) => {
-    const response = await fetch("/api/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ projectId: selectedChat.projectId, text }),
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      setSelectedChat(data);
-
-      // Update the corresponding chat in the chats array
-      setChats((prevChats) =>
-        prevChats.map((chat) =>
-          chat._id === data._id ? { ...chat, messages: data.messages } : chat
-        )
-      );
-    }
-  };
 
   return (
     <>
@@ -57,16 +28,31 @@ const Messages = ({ selectedChat, setSelectedChat, chats, setChats }) => {
       <Box
         sx={{
           display: "grid",
-          gridTemplateColumns: "minmax(390px, 1.6fr) 3.4fr",
-          height: "100vh",
+          gridTemplateColumns: {
+            xs: "unset",
+            sm3: "minmax(390px, 1.6fr) 3.4fr",
+          },
+          maxHeight: { xs: "unset", sm3: "calc(100vh - 74px)" },
         }}
       >
-        <ChatsList chats={chats} fetchMessages={fetchMessages} />
+        <ChatsList
+          chats={chats}
+          // fetchMessages={fetchMessages}
+          fetchMessages={(projectId) => {
+            fetchMessages(projectId);
+          }}
+          chatslistSX={{
+            display: { xs: selectedChat ? "none" : "block", sm3: "block" },
+          }}
+        />
 
         <Box
           sx={{
             width: "100%",
-            pt: 4,
+            height: "100%",
+            maxHeight: "calc(100vh - 74px)",
+
+            pt: { xs: 2, sm: 3, sm3: 4 },
             display: "flex",
             flexDirection: "column",
           }}
@@ -78,13 +64,37 @@ const Messages = ({ selectedChat, setSelectedChat, chats, setChats }) => {
                   borderBottom: 1,
                   borderColor: "#32374033",
                   paddingBottom: "24px",
-                  paddingLeft: "24px",
+                  paddingLeft: { xs: "16px", sm3: "24px" },
                   display: "flex",
                   alignItems: "center",
                   gap: "10px",
                   flexWrap: "wrap",
                 }}
               >
+                <Button
+                  edge="start"
+                  color="inherit"
+                  aria-label="open drawer"
+                  sx={{
+                    display: { xs: "flex", sm3: "none" },
+                    backgroundColor: "#3237401A",
+                    "&:hover": {
+                      backgroundColor: "rgba(50, 55, 64, 0.2)",
+                    },
+                    minWidth: "unset",
+                    maxHeight: "43px",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: "12px",
+                    marginRight: "24px",
+                  }}
+                  onClick={() => {
+                    setSelectedChat(null);
+                  }}
+                >
+                  <ArrowBackIcon />
+                </Button>
+
                 <Box
                   sx={{
                     display: "flex",
@@ -125,16 +135,17 @@ const Messages = ({ selectedChat, setSelectedChat, chats, setChats }) => {
                       gap: "6px",
                     }}
                   >
-                    {selectedChat.projectId.user_id.username}{" "}
-                    <Box
-                      sx={{
+                    {selectedChat.projectId.user_id.username}
+                    <span
+                      style={{
                         width: "6px",
+                        minWidth: "6px",
                         height: "6px",
                         borderRadius: "50%",
                         backgroundColor: "#323740",
                         marginBottom: "1px",
                       }}
-                    ></Box>
+                    ></span>
                     {selectedChat.projectId.title}
                   </Typography>
                   <Box
@@ -153,7 +164,14 @@ const Messages = ({ selectedChat, setSelectedChat, chats, setChats }) => {
               <MessageInput onSend={handleSend} />
             </>
           ) : (
-            <Typography variant="h6" sx={{ textAlign: "center", my: "auto" }}>
+            <Typography
+              variant="h6"
+              sx={{
+                textAlign: "center",
+                my: "auto",
+                display: { xs: "none", sm3: "block" },
+              }}
+            >
               Select a chat to start messaging
             </Typography>
           )}

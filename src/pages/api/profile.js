@@ -13,7 +13,6 @@ const handler = async (req, res) => {
 
   if (req.method === "POST") {
     const { name, email, image } = req.body;
-    // console.log("image:::", image);
     try {
       const user = await User.findById(session.user.id);
       if (!user) {
@@ -28,7 +27,7 @@ const handler = async (req, res) => {
       res.status(200).json({
         message: "Profile updated successfully",
         user: {
-          name: user.name,
+          name: user.username,
           email: user.email,
           image: user.image,
         },

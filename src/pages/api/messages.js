@@ -3,6 +3,7 @@ import Chat from "@/models/Chat";
 import Project from "@/models/Project";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "./auth/[...nextauth]";
+import mongoose from "mongoose";
 
 const handler = async (req, res) => {
   await connectDB();
@@ -26,12 +27,28 @@ const handler = async (req, res) => {
               "username image"
             );
             chat.projectId = project;
+            // Mark messages as read if they haven't been read by the current user
+            chat.messages.forEach((message) => {
+              if (!message.readBy.includes(session.user.id)) {
+                message.readBy.push(session.user.id);
+              }
+            });
+            await chat.save(); // Save the chat document with updated read statuses
           }
           return res.status(200).json(chat);
         } else {
+          // Adjust the query to correctly find chats associated with the user
           const query = session.user.role.startsWith("Corporate")
             ? {}
-            : { "projectId.user_id": session.user.id };
+            : {
+                projectId: {
+                  $in: await Project.find({ user_id: session.user.id }).select(
+                    "_id"
+                  ),
+                },
+              };
+
+          // console.log("Query used:", query);
 
           const chats = await Chat.find(query)
             .populate({
@@ -43,10 +60,25 @@ const handler = async (req, res) => {
             })
             .populate("messages.sender", "username image");
 
-          return res.status(200).json(chats);
+          // Add unread messages count
+          const chatsWithUnread = chats.map((chat) => {
+            const unreadMessages = chat.messages.filter(
+              (msg) => !msg.readBy.includes(session.user.id)
+            ).length;
+            return {
+              ...chat.toObject(), // Convert document to plain object
+              unreadCount: unreadMessages,
+            };
+          });
+
+          return res.status(200).json(chatsWithUnread);
         }
       } catch (error) {
-        res.status(500).json({ message: "Error fetching messages", error });
+        console.error("MongoDB operation failed", error);
+        res.status(500).json({
+          message: "Error fetching messages",
+          error: error.message || error.toString(),
+        });
       }
       break;
     case "POST":
