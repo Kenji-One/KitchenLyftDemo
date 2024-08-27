@@ -57,6 +57,12 @@ export default async function handler(req, res) {
           paymentType,
         },
       });
+      // Log the session ID to ensure it's generated
+      console.log("Stripe Session ID:", stripeSession.id);
+
+      if (!stripeSession.id) {
+        throw new Error("Stripe session ID not generated");
+      }
       // Save the payment intent ID
       if (paymentType === "first") {
         order.firstPayment.paymentIntentId = stripeSession.payment_intent;
