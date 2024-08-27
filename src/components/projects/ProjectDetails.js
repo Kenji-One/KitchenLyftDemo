@@ -79,7 +79,7 @@ const ProjectDetails = ({
       if (checkoutSession.ok) {
         console.log("sessionDataaa:", sessionData);
         // Redirect to Stripe checkout
-        // window.location.href = `https://checkout.stripe.com/pay/${sessionData.sessionId}`;
+        window.location.href = sessionData.url;
       } else {
         console.error("Failed to create Stripe checkout session");
       }
