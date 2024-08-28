@@ -19,7 +19,7 @@ const sendPaymentConfirmationEmail = async (order, project, isFirstPayment) => {
       pass: process.env.EMAIL_PASS,
     },
   });
-
+  console.log("project brother:", project);
   const subject = isFirstPayment
     ? `Kitchen Lyft Order Confirmation #${order._id} [1/2]`
     : `Kitchen Lyft Order Confirmation #${order._id} [2/2]`;
@@ -76,7 +76,7 @@ export default async function handler(req, res) {
         return res.status(404).json({ error: "Order not found" });
       }
       console.log("webhook order:", order);
-      const project = await Project.findById(order.projectId);
+      const project = await Project.findById(order.projectId._id);
       console.log(
         "session.metadata.paymentType:",
         session.metadata.paymentType

@@ -23,6 +23,7 @@ const ProjectDetails = ({
   setSelectedProject,
   letsGenerateQuote,
   handleSend,
+  setLoading,
 }) => {
   const router = useRouter();
 
@@ -50,6 +51,7 @@ const ProjectDetails = ({
   ];
 
   const handleCompleteOrder = async () => {
+    setLoading(true);
     const response = await fetch("/api/orders/create", {
       method: "POST",
       headers: {

@@ -768,6 +768,7 @@ const Dashboard = ({ session2 }) => {
                   setSelectedProject={setSelectedProject}
                   letsGenerateQuote={letsGenerateQuote}
                   handleSend={handleSend}
+                  setLoading={setLoading}
                 />
               ) : (
                 <GenerateQuoteForm
