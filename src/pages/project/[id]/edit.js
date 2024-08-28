@@ -26,6 +26,7 @@ const EditProject = ({ session2 }) => {
   const { id } = router.query;
   const [images, setImages] = useState([]);
   const [description, setDescription] = useState("");
+  const [editableProject, seteditableProject] = useState([]);
   const [location, setLocation] = useState("");
   const [priority, setPriority] = useState("");
   const [status, setStatus] = useState("");
@@ -41,6 +42,7 @@ const EditProject = ({ session2 }) => {
       .then((res) => res.json())
       .then((data) => {
         const project = data.project;
+        seteditableProject(project);
         setDescription(project.description);
         setLocation(project.location);
         setPriority(project.priority);
@@ -311,7 +313,7 @@ const EditProject = ({ session2 }) => {
                   <MenuItem value="Awaiting Payment">Awaiting Payment</MenuItem>
                   <MenuItem value="Paid">Paid</MenuItem>
                   <MenuItem value="In Production">In Production</MenuItem>
-                  {status === "Paid" && (
+                  {editableProject.status === "Paid" && (
                     <MenuItem value="Shipped">Shipped</MenuItem>
                   )}
                   <MenuItem value="Order Received">Order Received</MenuItem>
