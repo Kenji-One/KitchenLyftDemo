@@ -74,7 +74,9 @@ const Dashboard = ({ session2 }) => {
 
   // Initialize Socket.IO connection
   useEffect(() => {
-    const newSocket = io(); // Connect to the server
+    const newSocket = io("https://kitchen-lyft-demo-gamma.vercel.app", {
+      transports: ["polling"],
+    });
     setSocket(newSocket);
 
     // Log socket connection status
