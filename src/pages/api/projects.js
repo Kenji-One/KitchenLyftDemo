@@ -2,6 +2,8 @@ import connectDB from "@/utils/db";
 import Project from "@/models/Project";
 import Quote from "@/models/Quote";
 import Chat from "@/models/Chat";
+import Order from "@/models/Order";
+import stripe from "@/utils/ourStripe";
 import multer from "multer";
 import cloudinary from "@/utils/cloudinary";
 import { getServerSession } from "next-auth/next";
@@ -211,7 +213,45 @@ const handler = async (req, res) => {
           project.startDate = startDate ?? project.startDate;
 
           const updatedProject = await project.save();
-          console.log("project details was changed from projects.js");
+          // If the status is changed to "Shipped," capture the second payment
+          if (status === "Shipped") {
+            const order = await Order.findOne({ projectId: id });
+
+            if (!order) {
+              return res.status(404).json({ message: "Order not found" });
+            }
+
+            if (
+              !order.secondPayment ||
+              order.secondPayment.status === "Completed"
+            ) {
+              return res.status(400).json({
+                message: "Second payment already completed or not required.",
+              });
+            }
+
+            // Create a PaymentIntent or use an existing one for automatic payment
+            let paymentIntentId = order.firstPayment?.paymentIntentId;
+
+            if (paymentIntentId) {
+              const paymentIntent = await stripe.paymentIntents.create({
+                amount: Math.round(order.secondPayment.amount * 100), // amount in cents
+                currency: "usd",
+                payment_method: order.firstPayment.paymentIntentId,
+                off_session: true,
+                confirm: true,
+                metadata: {
+                  orderId: order._id.toString(),
+                  paymentType: "second",
+                },
+              });
+              // Update order status to Completed after successful payment
+              order.secondPayment.paymentIntentId = paymentIntent.id;
+              order.secondPayment.status = "Completed";
+              order.status = "Completed";
+              await order.save();
+            }
+          }
           res.status(200).json(updatedProject);
         } catch (error) {
           console.error("Error updating project:", error);

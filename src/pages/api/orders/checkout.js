@@ -55,6 +55,7 @@ export default async function handler(req, res) {
             orderId: order._id.toString(),
             paymentType,
           },
+          customer_email: session.user.email,
         })
         .catch((err) => {
           console.error("Stripe session creation failed:", err);
@@ -67,14 +68,6 @@ export default async function handler(req, res) {
         throw new Error("Stripe session ID is undefined");
       }
 
-      if (paymentType === "second") {
-        const subject = `Your Order #${order._id} - Second Payment`;
-        const text = `Please complete the second payment for your order ${order.projectId.title}. Use the following link to make the payment:\n\n${stripeSession.url}`;
-
-        await sendPaymentEmail(session.user.email, subject, text);
-      }
-
-      await order.save();
       res.status(200).json(stripeSession);
     } catch (error) {
       res

@@ -39,6 +39,7 @@ const orderSchema = new mongoose.Schema(
       },
       paymentIntentId: String,
     },
+    stripeCustomerId: { type: String, required: true }, // Add this line
     createdAt: {
       type: Date,
       default: Date.now,

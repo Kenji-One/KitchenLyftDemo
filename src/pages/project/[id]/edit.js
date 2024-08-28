@@ -118,23 +118,23 @@ const EditProject = ({ session2 }) => {
     });
 
     if (response.ok) {
-      if (status === "Shipped") {
-        const triggerResponse = await fetch(`/api/orders/checkout`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ orderId: id, paymentType: "second" }),
-        });
+      // if (status === "Shipped") {
+      //   const triggerResponse = await fetch(`/api/orders/checkout`, {
+      //     method: "POST",
+      //     headers: {
+      //       "Content-Type": "application/json",
+      //     },
+      //     body: JSON.stringify({ orderId: id, paymentType: "second" }),
+      //   });
 
-        if (triggerResponse.ok) {
-          const data = await triggerResponse.json();
-          console.log("Second payment link created:", data.checkoutUrl);
-          // Optionally, you can notify the admin that the link was sent
-        } else {
-          console.error("Failed to create second payment link");
-        }
-      }
+      //   if (triggerResponse.ok) {
+      //     const data = await triggerResponse.json();
+      //     console.log("Second payment link created:", data.checkoutUrl);
+      //     // Optionally, you can notify the admin that the link was sent
+      //   } else {
+      //     console.error("Failed to create second payment link");
+      //   }
+      // }
 
       setLoading(false);
       router.push(`/project/${id}/edit`);

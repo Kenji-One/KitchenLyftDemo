@@ -97,7 +97,7 @@ export default async function handler(req, res) {
         project.status = "Shipped";
         await sendPaymentConfirmationEmail(order, project, false);
       }
-
+      console.log("sessiooon from webhooook:", session);
       // Save the payment intent ID if available
       if (session.payment_intent) {
         if (session.metadata.paymentType === "first") {
