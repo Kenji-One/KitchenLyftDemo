@@ -30,8 +30,12 @@ const handler = async (req, res) => {
 
           const quote = await Quote.findOne({ projectId: id }).lean();
           const chat = await Chat.findOne({ projectId: id })
-            .lean()
-            .populate("messages.sender", "username image");
+            .populate({
+              path: "projectId",
+              populate: { path: "user_id", select: "username image" },
+            })
+            .populate("messages.sender", "username image")
+            .lean();
 
           if (!project) {
             return res.status(404).json({ message: "Project not found" });

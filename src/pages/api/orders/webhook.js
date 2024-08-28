@@ -20,7 +20,7 @@ const sendPaymentConfirmationEmail = async (order, project, isFirstPayment) => {
       pass: process.env.EMAIL_PASS,
     },
   });
-  console.log("project brother:", project);
+  // console.log("project brother:", project);
   const subject = isFirstPayment
     ? `Kitchen Lyft Order Confirmation #${order._id} [1/2]`
     : `Kitchen Lyft Order Confirmation #${order._id} [2/2]`;
@@ -58,12 +58,12 @@ export default async function handler(req, res) {
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
-  console.log("Received event:", event.type);
+  // console.log("Received event:", event.type);
 
   switch (event.type) {
     case "checkout.session.completed":
       const session = event.data.object;
-      console.log("Checkout session completed:", session);
+      // console.log("Checkout session completed:", session);
       // Find the order using the session ID from metadata
       const order = await Order.findOne({
         _id: session.metadata.orderId,
@@ -76,14 +76,14 @@ export default async function handler(req, res) {
         );
         return res.status(404).json({ error: "Order not found" });
       }
-      console.log("webhook order:", order);
+      // console.log("webhook order:", order);
       const project = await Project.findById(order.projectId._id).populate(
         "user_id"
       );
-      console.log(
-        "session.metadata.paymentType:",
-        session.metadata.paymentType
-      );
+      // console.log(
+      //   "session.metadata.paymentType:",
+      //   session.metadata.paymentType
+      // );
 
       // Determine if this is the first or second payment based on the session ID
       if (session.metadata.paymentType === "first") {
@@ -93,7 +93,7 @@ export default async function handler(req, res) {
         await sendPaymentConfirmationEmail(order, project, true);
       } else if (session.metadata.paymentType === "second") {
         order.secondPayment.status = "Completed";
-        order.status = "Shipped";
+        order.status = "Completed";
         project.status = "Shipped";
         await sendPaymentConfirmationEmail(order, project, false);
       }

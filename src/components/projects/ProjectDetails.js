@@ -164,7 +164,7 @@ const ProjectDetails = ({
             >
               Edit Project
             </Button>
-            {quote && (
+            {quote && project.status !== "Paid" && (
               <Button
                 variant="contained"
                 onClick={handleCompleteOrder}
@@ -178,18 +178,20 @@ const ProjectDetails = ({
                 Complete Order
               </Button>
             )}
-            <Button
-              variant="contained"
-              onClick={() => letsGenerateQuote()}
-              sx={{
-                backgroundColor: "#60B143",
-                "&:hover": {
-                  backgroundColor: "rgba(96, 177, 67, 0.9)",
-                },
-              }}
-            >
-              Generate Quote
-            </Button>
+            {project.status !== "Paid" && (
+              <Button
+                variant="contained"
+                onClick={() => letsGenerateQuote()}
+                sx={{
+                  backgroundColor: "#60B143",
+                  "&:hover": {
+                    backgroundColor: "rgba(96, 177, 67, 0.9)",
+                  },
+                }}
+              >
+                Generate Quote
+              </Button>
+            )}
           </Box>
         </Box>
         <Box
@@ -416,27 +418,31 @@ const ProjectDetails = ({
       </Box>
       <Box
         sx={{
-          display: { xs: "none", md2: "flex" },
-          flexDirection: "column",
-          justifyContent: "space-between",
           paddingTop: "32px",
         }}
       >
-        <Box>
+        <Box
+          sx={{
+            display: { xs: "none", md2: "flex" },
+            flexDirection: "column",
+            position: "sticky",
+            top: "24px",
+          }}
+        >
           <Typography
             variant="h5"
             sx={{
               paddingLeft: "16px",
               textTransform: "uppercase",
               // marginTop: "32px",
-              marginBottom: "4px",
+              marginBottom: "24px",
             }}
           >
             Messages
           </Typography>
           <MessageList messages={chat.messages} />
+          <MessageInput onSend={handleSend} />
         </Box>
-        <MessageInput onSend={handleSend} />
       </Box>
     </Box>
   );

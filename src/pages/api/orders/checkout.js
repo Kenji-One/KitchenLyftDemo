@@ -3,6 +3,7 @@ import connectDB from "@/utils/db";
 import Order from "@/models/Order";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]";
+import { sendPaymentEmail } from "@/utils/email";
 
 export default async function handler(req, res) {
   await connectDB();
@@ -23,14 +24,11 @@ export default async function handler(req, res) {
       }
 
       let amount;
-      let paymentIntentId;
 
       if (paymentType === "first") {
         amount = order.firstPayment.amount;
-        paymentIntentId = order.firstPayment.paymentIntentId;
       } else if (paymentType === "second") {
         amount = order.secondPayment.amount;
-        paymentIntentId = order.secondPayment.paymentIntentId;
       } else {
         return res.status(400).json({ error: "Invalid payment type" });
       }
@@ -69,19 +67,12 @@ export default async function handler(req, res) {
         throw new Error("Stripe session ID is undefined");
       }
 
-      // Fetch the session details to get the payment_intent
-      const sessionDetails = await stripe.checkout.sessions.retrieve(
-        stripeSession.id
-      );
-      console.log("sessionDetails bruh", sessionDetails);
+      if (paymentType === "second") {
+        const subject = `Your Order #${order._id} - Second Payment`;
+        const text = `Please complete the second payment for your order ${order.projectId.title}. Use the following link to make the payment:\n\n${stripeSession.url}`;
 
-      // paymentIntentId = sessionDetails.payment_intent;
-      // // Save the payment intent ID
-      // if (paymentType === "first") {
-      //   order.firstPayment.paymentIntentId = paymentIntentId;
-      // } else if (paymentType === "second") {
-      //   order.secondPayment.paymentIntentId = paymentIntentId;
-      // }
+        await sendPaymentEmail(session.user.email, subject, text);
+      }
 
       await order.save();
       res.status(200).json(stripeSession);

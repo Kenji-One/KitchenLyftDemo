@@ -1,14 +1,18 @@
 import nodemailer from "nodemailer";
 
+const createTransporter = () => {
+  return nodemailer.createTransport({
+    service: "Gmail",
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+  });
+};
+
 export const sendRecoveryEmail = async (email, resetUrl) => {
   try {
-    const transporter = nodemailer.createTransport({
-      service: "Gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
+    const transporter = createTransporter();
 
     const mailOptions = {
       to: email,
@@ -24,5 +28,23 @@ export const sendRecoveryEmail = async (email, resetUrl) => {
   } catch (error) {
     console.error("Error sending recovery email:", error);
     throw new Error("There was an error sending the recovery email.");
+  }
+};
+
+export const sendPaymentEmail = async (email, subject, text) => {
+  try {
+    const transporter = createTransporter();
+
+    const mailOptions = {
+      to: email,
+      from: process.env.EMAIL_USER,
+      subject,
+      text,
+    };
+
+    await transporter.sendMail(mailOptions);
+  } catch (error) {
+    console.error("Error sending payment email:", error);
+    throw new Error("There was an error sending the payment email.");
   }
 };

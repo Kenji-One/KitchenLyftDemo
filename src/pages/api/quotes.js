@@ -1,5 +1,6 @@
 import connectDB from "@/utils/db";
 import Quote from "@/models/Quote";
+import Project from "@/models/Project";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "./auth/[...nextauth]";
 
@@ -11,6 +12,7 @@ const handler = async (req, res) => {
     return res.status(401).json({ message: "Unauthorized" });
   }
   const { projectId } = req.query;
+
   switch (req.method) {
     case "GET":
       try {
@@ -30,20 +32,25 @@ const handler = async (req, res) => {
 
     case "POST":
       try {
-        // Check if there is an existing quote for the project
         const existingQuote = await Quote.findOne({
           projectId: req.body.projectId,
         });
         if (existingQuote) {
-          // Delete the existing quote if it exists
           await Quote.deleteOne({ _id: existingQuote._id });
         }
 
         const newQuote = new Quote({ ...req.body, user_id: session.user.id });
         await newQuote.save();
+
+        const project = await Project.findById(req.body.projectId);
+        if (project) {
+          project.status = "Awaiting Payment";
+
+          await project.save();
+        }
         res.status(201).json(newQuote);
       } catch (error) {
-        console.error("Error in creating or replacing a quote:", error); // Improved error logging
+        console.error("Error in creating or replacing a quote:", error);
         res.status(500).json({ message: "Error creating quote", error });
       }
       break;

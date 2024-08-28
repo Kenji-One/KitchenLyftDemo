@@ -21,7 +21,7 @@ const Messages = ({
 }) => {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-
+  console.log("selectedChat:", selectedChat);
   return (
     <>
       <Loader open={loading} />
@@ -36,8 +36,8 @@ const Messages = ({
         }}
       >
         <ChatsList
+          selectedChat={selectedChat}
           chats={chats}
-          // fetchMessages={fetchMessages}
           fetchMessages={(projectId) => {
             fetchMessages(projectId);
           }}

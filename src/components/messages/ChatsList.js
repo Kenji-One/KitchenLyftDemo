@@ -4,12 +4,19 @@ import {
   Typography,
   List,
   ListItem,
+  selectedChat,
   ListItemText,
   Avatar,
   Chip,
 } from "@mui/material";
 import ProjectStatusChip from "../projects/ProjectStatusChip";
-const ChatsList = ({ chats, fetchMessages, tabValue, chatslistSX }) => {
+const ChatsList = ({
+  chats,
+  fetchMessages,
+  tabValue,
+  chatslistSX,
+  selectedChat,
+}) => {
   return (
     <Box
       sx={{
@@ -43,6 +50,10 @@ const ChatsList = ({ chats, fetchMessages, tabValue, chatslistSX }) => {
               onClick={() => fetchMessages(chat.projectId._id)}
               sx={{
                 gap: "10px",
+                backgroundColor:
+                  selectedChat && selectedChat._id === chat._id
+                    ? "#A5BD7A33"
+                    : "transparent",
                 "&:hover": { backgroundColor: "#A5BD7A33" },
                 flexWrap: "wrap",
               }}

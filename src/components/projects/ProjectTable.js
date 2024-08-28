@@ -1,7 +1,5 @@
 import React from "react";
 import {
-  Box,
-  Typography,
   Table,
   TableBody,
   TableCell,
@@ -9,7 +7,6 @@ import {
   TableHead,
   TableRow,
   Paper,
-  Chip,
   Avatar,
   IconButton,
 } from "@mui/material";

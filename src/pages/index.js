@@ -53,6 +53,7 @@ const Dashboard = ({ session2 }) => {
   const router = useRouter();
   const [value, setValue] = useState(0);
   const [projects, setProjects] = useState([]);
+  const [orders, setOrders] = useState([]);
   const [users, setUsers] = useState([]);
   const [selectedProject, setSelectedProject] = useState(null);
   const [thereIsClickForQoute, setThereIsClickForQoute] = useState(false);
@@ -74,9 +75,10 @@ const Dashboard = ({ session2 }) => {
 
   // Initialize Socket.IO connection
   useEffect(() => {
-    const newSocket = io("https://kitchen-lyft-demo-gamma.vercel.app", {
-      transports: ["polling"],
-    });
+    // const newSocket = io("https://kitchen-lyft-demo-gamma.vercel.app", {
+    //   transports: ["polling"],
+    // });
+    const newSocket = io();
     setSocket(newSocket);
 
     // Log socket connection status
@@ -214,6 +216,23 @@ const Dashboard = ({ session2 }) => {
       }
     };
     fetchProjects();
+  }, []);
+
+  // Fetch Orders
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch("/api/orders");
+        const data = await response.json();
+        setOrders(data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Failed to fetch orders", error);
+        setLoading(false);
+      }
+    };
+    fetchOrders();
   }, []);
 
   useEffect(() => {
@@ -927,7 +946,24 @@ const Dashboard = ({ session2 }) => {
                   handleDeleteProject={handleDeleteProject}
                 />
               )}
-              {value === 2 && <Orders />}
+              {value === 2 && (
+                <Box sx={{ mt: "16px" }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      mb: 2,
+                    }}
+                  >
+                    <Typography variant="h2">Orders</Typography>
+                  </Box>
+                  {orders.length > 0 ? (
+                    <Orders orders={orders} />
+                  ) : (
+                    <Typography sx={{ pt: 2 }}>No orders available</Typography>
+                  )}
+                </Box>
+              )}
               {value === 3 && (
                 <Messages
                   selectedChat={selectedChat}

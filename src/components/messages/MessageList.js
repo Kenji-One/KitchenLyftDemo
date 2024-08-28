@@ -25,7 +25,7 @@ const MessageList = ({ messages }) => {
     <Box
       sx={{
         height: "100%",
-        maxHeight: "calc(100vh - 264px)", // Set your desired max height
+        height: "calc(100vh - 264px)", // Set your desired max height
         overflowY: "auto", // Make it scrollable
       }}
     >

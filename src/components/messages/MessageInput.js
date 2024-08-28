@@ -17,15 +17,14 @@ const MessageInput = ({ onSend }) => {
       onSubmit={handleSubmit}
       sx={{
         display: "flex",
-        mt: "auto",
+        // mt: "auto",
         borderTop: 1,
         width: "100%",
         borderColor: "#3237401A",
         py: "16px",
         paddingRight: { xs: "16px", sm2: "24px" },
         paddingBottom: { xs: "0", md: "16px" },
-        position: "sticky",
-        bottom: 0,
+
         backgroundColor: "white", // Ensure the background color matches the container's background
         zIndex: 1,
       }}
