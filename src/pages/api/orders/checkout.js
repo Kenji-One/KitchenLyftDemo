@@ -84,7 +84,7 @@ export default async function handler(req, res) {
       }
 
       await order.save();
-      res.status(200).json(sessionDetails);
+      res.status(200).json(stripeSession);
     } catch (error) {
       res
         .status(500)

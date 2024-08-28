@@ -61,12 +61,9 @@ export default async function handler(req, res) {
     case "checkout.session.completed":
       const session = event.data.object;
 
-      // Find the order using the payment intent ID
+      // Find the order using the session ID from metadata
       const order = await Order.findOne({
-        $or: [
-          { "firstPayment.paymentIntentId": session.payment_intent },
-          { "secondPayment.paymentIntentId": session.payment_intent },
-        ],
+        _id: session.metadata.orderId,
       }).populate("projectId");
 
       if (!order) {
@@ -75,18 +72,26 @@ export default async function handler(req, res) {
 
       const project = await Project.findById(order.projectId);
 
-      if (order.firstPayment.paymentIntentId === session.payment_intent) {
+      // Determine if this is the first or second payment based on the session ID
+      if (session.metadata.paymentType === "first") {
         order.firstPayment.status = "Completed";
         order.status = "Paid";
         project.status = "Paid";
         await sendPaymentConfirmationEmail(order, project, true);
-      } else if (
-        order.secondPayment.paymentIntentId === session.payment_intent
-      ) {
+      } else if (session.metadata.paymentType === "second") {
         order.secondPayment.status = "Completed";
         order.status = "Shipped";
         project.status = "Shipped";
         await sendPaymentConfirmationEmail(order, project, false);
+      }
+
+      // Save the payment intent ID if available
+      if (session.payment_intent) {
+        if (session.metadata.paymentType === "first") {
+          order.firstPayment.paymentIntentId = session.payment_intent;
+        } else if (session.metadata.paymentType === "second") {
+          order.secondPayment.paymentIntentId = session.payment_intent;
+        }
       }
 
       await order.save();
