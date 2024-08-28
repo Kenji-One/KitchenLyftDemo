@@ -63,7 +63,6 @@ export default async function handler(req, res) {
           throw new Error("Failed to create Stripe session");
         });
       // Log the session ID to ensure it's generated
-      console.log("Stripe Session ID:", stripeSession.id);
 
       if (!stripeSession.id) {
         console.error("Stripe session ID is undefined:", stripeSession);
