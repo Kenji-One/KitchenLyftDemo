@@ -76,7 +76,9 @@ export default async function handler(req, res) {
         return res.status(404).json({ error: "Order not found" });
       }
       console.log("webhook order:", order);
-      const project = await Project.findById(order.projectId._id);
+      const project = await Project.findById(order.projectId._id).populate(
+        "user_id"
+      );
       console.log(
         "session.metadata.paymentType:",
         session.metadata.paymentType
