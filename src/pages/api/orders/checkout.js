@@ -68,11 +68,19 @@ export default async function handler(req, res) {
         console.error("Stripe session ID is undefined:", stripeSession);
         throw new Error("Stripe session ID is undefined");
       }
+
+      // Fetch the session details to get the payment_intent
+      const sessionDetails = await stripe.checkout.sessions.retrieve(
+        stripeSession.id
+      );
+      console.log("sessionDetails bruh", sessionDetails);
+
+      paymentIntentId = sessionDetails.payment_intent;
       // Save the payment intent ID
       if (paymentType === "first") {
-        order.firstPayment.paymentIntentId = stripeSession.payment_intent;
+        order.firstPayment.paymentIntentId = paymentIntentId;
       } else if (paymentType === "second") {
-        order.secondPayment.paymentIntentId = stripeSession.payment_intent;
+        order.secondPayment.paymentIntentId = paymentIntentId;
       }
 
       await order.save();
