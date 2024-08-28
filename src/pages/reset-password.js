@@ -61,12 +61,17 @@ const ResetPasswordPage = () => {
           justifyContent: "center",
         }}
       >
-        <Image
+        {/* <Image
           // className={styles["logo"]}
           src={"/logo-kitchen.png"}
           width={"139px"}
           height={"15px"}
           alt="logo"
+          className="kitchen-logo"
+        /> */}
+        <img
+          src={"/logo 1.svg"}
+          alt="Logo of the Company"
           className="kitchen-logo"
         />
       </Box>

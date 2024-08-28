@@ -75,13 +75,13 @@ export default async function handler(req, res) {
       );
       console.log("sessionDetails bruh", sessionDetails);
 
-      paymentIntentId = sessionDetails.payment_intent;
-      // Save the payment intent ID
-      if (paymentType === "first") {
-        order.firstPayment.paymentIntentId = paymentIntentId;
-      } else if (paymentType === "second") {
-        order.secondPayment.paymentIntentId = paymentIntentId;
-      }
+      // paymentIntentId = sessionDetails.payment_intent;
+      // // Save the payment intent ID
+      // if (paymentType === "first") {
+      //   order.firstPayment.paymentIntentId = paymentIntentId;
+      // } else if (paymentType === "second") {
+      //   order.secondPayment.paymentIntentId = paymentIntentId;
+      // }
 
       await order.save();
       res.status(200).json(stripeSession);

@@ -75,8 +75,12 @@ export default async function handler(req, res) {
         );
         return res.status(404).json({ error: "Order not found" });
       }
-
+      console.log("webhook order:", order);
       const project = await Project.findById(order.projectId);
+      console.log(
+        "session.metadata.paymentType:",
+        session.metadata.paymentType
+      );
 
       // Determine if this is the first or second payment based on the session ID
       if (session.metadata.paymentType === "first") {
