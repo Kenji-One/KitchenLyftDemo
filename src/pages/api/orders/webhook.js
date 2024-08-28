@@ -57,16 +57,22 @@ export default async function handler(req, res) {
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
 
+  console.log("Received event:", event.type);
+
   switch (event.type) {
     case "checkout.session.completed":
       const session = event.data.object;
-
+      console.log("Checkout session completed:", session);
       // Find the order using the session ID from metadata
       const order = await Order.findOne({
         _id: session.metadata.orderId,
       }).populate("projectId");
 
       if (!order) {
+        console.error(
+          "Order not found for payment intent:",
+          session.payment_intent
+        );
         return res.status(404).json({ error: "Order not found" });
       }
 
