@@ -58,7 +58,9 @@ const ProjectDetails = ({
       body: JSON.stringify({
         projectId: project._id,
         userId: project.user_id._id,
-        totalAmount: quote.price,
+        totalAmount: Math.round(
+          quote.price * (1 + 0.12 + (project.priority === "High" ? 0.1 : 0))
+        ).toFixed(2),
       }),
     });
 
