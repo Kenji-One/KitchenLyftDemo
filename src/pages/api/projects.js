@@ -179,7 +179,10 @@ const handler = async (req, res) => {
           if (!project) {
             return res.status(404).json({ message: "Project not found" });
           }
-          if (project.user_id.toString() !== session.user.id) {
+          if (
+            session.user.role !== "CorporateAdmin" &&
+            project.user_id.toString() !== session.user.id
+          ) {
             return res.status(403).json({ message: "Forbidden" });
           }
 
