@@ -25,16 +25,13 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
     clientId: session2 ? session2.user.id : "anonymous",
     authCallback: async (tokenParams, callback) => {
       try {
-        const response = await fetch(
-          `http://localhost:3000/api/createAblyToken`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ clientId: tokenParams.clientId }),
-          }
-        );
+        const response = await fetch(`/api/createAblyToken`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ clientId: tokenParams.clientId }),
+        });
 
         if (response.ok) {
           const tokenRequest = await response.json();
