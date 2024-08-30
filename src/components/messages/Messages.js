@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import { io } from "socket.io-client";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Box, Typography, Avatar, Button } from "@mui/material";
 import MessageList from "@/components/messages/MessageList";

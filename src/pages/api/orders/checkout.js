@@ -15,58 +15,34 @@ export default async function handler(req, res) {
 
   if (req.method === "POST") {
     try {
-      const { orderId, paymentType } = req.body;
+      const { projectId, totalAmount } = req.body;
 
-      const order = await Order.findById(orderId);
-
-      if (!order) {
-        return res.status(404).json({ message: "Order not found" });
-      }
-
-      let amount;
-
-      if (paymentType === "first") {
-        amount = order.firstPayment.amount;
-      } else if (paymentType === "second") {
-        amount = order.secondPayment.amount;
-      } else {
-        return res.status(400).json({ error: "Invalid payment type" });
-      }
-
-      const stripeSession = await stripe.checkout.sessions
-        .create({
-          payment_method_types: ["card"],
-          line_items: [
-            {
-              price_data: {
-                currency: "usd",
-                product_data: {
-                  name: `Payment for Order #${order._id} - ${paymentType} payment`,
-                },
-                unit_amount: Math.round(amount * 100), // Stripe expects the amount in cents
+      const stripeSession = await stripe.checkout.sessions.create({
+        payment_method_types: ["card"],
+        line_items: [
+          {
+            price_data: {
+              currency: "usd",
+              product_data: {
+                name: `Payment for project #${projectId} - First payment`,
               },
-              quantity: 1,
+              unit_amount: Math.round((totalAmount / 2) * 100), // 50%
             },
-          ],
-          mode: "payment",
-          success_url: `${req.headers.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
-          cancel_url: `${req.headers.origin}/cancelled`,
-          metadata: {
-            orderId: order._id.toString(),
-            paymentType,
+            quantity: 1,
           },
-          customer_email: session.user.email,
-        })
-        .catch((err) => {
-          console.error("Stripe session creation failed:", err);
-          throw new Error("Failed to create Stripe session");
-        });
-      // Log the session ID to ensure it's generated
-
-      if (!stripeSession.id) {
-        console.error("Stripe session ID is undefined:", stripeSession);
-        throw new Error("Stripe session ID is undefined");
-      }
+        ],
+        mode: "payment",
+        customer_creation: "always",
+        success_url: `${req.headers.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: `${req.headers.origin}/cancelled`,
+        metadata: {
+          userId: session.user.id,
+          projectId: projectId,
+          paymentType: "first",
+          totalAmount: totalAmount,
+        },
+        customer_email: session.user.email,
+      });
 
       res.status(200).json(stripeSession);
     } catch (error) {

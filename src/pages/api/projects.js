@@ -230,14 +230,12 @@ const handler = async (req, res) => {
               });
             }
 
-            // Create a PaymentIntent or use an existing one for automatic payment
-            let paymentIntentId = order.firstPayment?.paymentIntentId;
-
-            if (paymentIntentId) {
+            try {
               const paymentIntent = await stripe.paymentIntents.create({
                 amount: Math.round(order.secondPayment.amount * 100), // amount in cents
                 currency: "usd",
-                payment_method: order.firstPayment.paymentIntentId,
+                customer: order.stripeCustomerId, // Use stored Stripe customer ID
+                payment_method: order.firstPayment.paymentMethodId,
                 off_session: true,
                 confirm: true,
                 metadata: {
@@ -250,8 +248,15 @@ const handler = async (req, res) => {
               order.secondPayment.status = "Completed";
               order.status = "Completed";
               await order.save();
+            } catch (paymentError) {
+              console.error("Error capturing second payment:", paymentError);
+              return res.status(500).json({
+                message: "Failed to capture second payment",
+                error: paymentError.message,
+              });
             }
           }
+
           res.status(200).json(updatedProject);
         } catch (error) {
           console.error("Error updating project:", error);

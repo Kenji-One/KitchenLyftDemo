@@ -4,10 +4,8 @@ import {
   Typography,
   List,
   ListItem,
-  selectedChat,
   ListItemText,
   Avatar,
-  Chip,
 } from "@mui/material";
 import ProjectStatusChip from "../projects/ProjectStatusChip";
 const ChatsList = ({

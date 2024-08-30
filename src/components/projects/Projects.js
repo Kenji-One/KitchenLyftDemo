@@ -1,7 +1,4 @@
-import React, { useState, useEffect } from "react";
-import { Box, Grid, Typography, Button } from "@mui/material";
-// import { useRouter } from "next/router";
-import ProjectCard from "./ProjectCard";
+import { Box, Typography } from "@mui/material";
 import ProjectTable from "./ProjectTable";
 
 const Projects = ({

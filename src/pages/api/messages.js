@@ -83,12 +83,17 @@ const handler = async (req, res) => {
       break;
     case "POST":
       try {
-        const { projectId, text } = req.body;
+        const { projectId, text, senderId } = req.body;
         const chat = await Chat.findOne({ projectId });
         if (!chat) {
           return res.status(404).json({ message: "Chat not found" });
         }
-        chat.messages.push({ sender: session.user.id, text });
+        const newMessage = {
+          sender: senderId,
+          text,
+          readBy: [senderId],
+        };
+        chat.messages.push(newMessage);
         await chat.save();
 
         // Populate the chat object after saving the message

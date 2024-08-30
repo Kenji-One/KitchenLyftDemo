@@ -29,6 +29,7 @@ const orderSchema = new mongoose.Schema(
         default: "Pending",
       },
       paymentIntentId: String,
+      paymentMethodId: String,
     },
     secondPayment: {
       amount: Number,
@@ -39,7 +40,7 @@ const orderSchema = new mongoose.Schema(
       },
       paymentIntentId: String,
     },
-    stripeCustomerId: { type: String, required: true }, // Add this line
+    stripeCustomerId: { type: String }, // Add this line
     createdAt: {
       type: Date,
       default: Date.now,

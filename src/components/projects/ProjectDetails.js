@@ -52,43 +52,27 @@ const ProjectDetails = ({
 
   const handleCompleteOrder = async () => {
     setLoading(true);
-    const response = await fetch("/api/orders/create", {
+
+    const checkoutSession = await fetch("/api/orders/checkout", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
         projectId: project._id,
-        userId: project.user_id._id,
         totalAmount: Math.round(
           quote.price * (1 + 0.12 + (project.priority === "High" ? 0.1 : 0))
         ).toFixed(2),
       }),
     });
 
-    const data = await response.json();
-
-    if (response.ok) {
-      const order = data;
-
-      const checkoutSession = await fetch("/api/orders/checkout", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ orderId: order._id, paymentType: "first" }),
-      });
-
-      const sessionData = await checkoutSession.json();
-      if (checkoutSession.ok) {
-        console.log("sessionDataaa:", sessionData);
-        // Redirect to Stripe checkout
-        window.location.href = sessionData.url;
-      } else {
-        console.error("Failed to create Stripe checkout session");
-      }
+    const sessionData = await checkoutSession.json();
+    if (checkoutSession.ok) {
+      // console.log("sessionDataaa:", sessionData);
+      // Redirect to Stripe checkout
+      window.location.href = sessionData.url;
     } else {
-      console.error("Failed to create order");
+      console.error("Failed to create Stripe checkout session");
     }
   };
 

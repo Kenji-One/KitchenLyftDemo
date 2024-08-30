@@ -1,41 +1,44 @@
-import { Server } from "socket.io";
+import Ably from "ably";
 import connectDB from "@/utils/db";
 import Chat from "@/models/Chat";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "./auth/[...nextauth]";
 
-const SocketHandler = async (req, res) => {
-  if (!res.socket.server.io) {
-    console.log("Starting Socket.io server...");
-    const io = new Server(res.socket.server);
-    res.socket.server.io = io;
+const ably = new Ably.Realtime({ key: process.env.ABLY_API_KEY });
+const subscriptions = new Map(); // To keep track of subscriptions
 
-    io.on("connection", (socket) => {
-      console.log("New client connected", socket.id);
+export default async function handler(req, res) {
+  const session = await getServerSession(req, res, authOptions);
+  if (!session) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
 
-      socket.on("join_project", (projectId) => {
-        socket.join(projectId);
-        io.emit("update_unread_count", { projectId });
-        console.log(`Socket ${socket.id} joined room: ${projectId}`);
-      });
+  const channel = ably.channels.get("chat");
+  const userId = session.user.id;
 
-      socket.on("new_message", async (message) => {
-        console.log("messagee:", message);
-        const session = await getServerSession(req, res, authOptions);
-        if (!session) {
-          return;
-        }
-        const { projectId, text, senderId } = message;
-        await connectDB();
+  if (!subscriptions.has(userId)) {
+    subscriptions.set(userId, true);
+
+    channel.subscribe("new_message", async (message) => {
+      const { id, projectId, text, senderId } = message.data;
+      await connectDB();
+
+      const existingMessage = await Chat.findOne({ "messages.uniqueId": id });
+      if (existingMessage) {
+        return;
+      }
+
+      try {
         const chat = await Chat.findOne({ projectId });
 
         if (chat) {
           const newMessage = {
+            uniqueId: id,
             sender: senderId,
             text,
             readBy: [senderId],
           };
-          console.log("newMessage:", newMessage);
+
           chat.messages.push(newMessage);
           await chat.save();
 
@@ -43,19 +46,22 @@ const SocketHandler = async (req, res) => {
             "messages.sender",
             "username image"
           );
-          console.log("projectId:", projectId?._id || projectId);
-          io.to(projectId?._id || projectId).emit("message", populatedChat);
-          io.emit("update_unread_count", { projectId });
-        }
-      });
 
-      socket.on("disconnect", () => {
-        console.log("Client disconnected", socket.id);
-      });
+          // console.log("Publishing new message to channel:", populatedChat); // Debugging
+          channel.publish("message", populatedChat);
+          channel.publish("update_unread_count", { projectId });
+        } else {
+          console.log("Chat not found for projectId:", projectId); // Debugging
+        }
+      } catch (error) {
+        console.error("Error processing message:", error); // Debugging
+      }
+    });
+
+    channel.subscribe("join_project", (projectId) => {
+      channel.publish("update_unread_count", { projectId });
     });
   }
 
   res.end();
-};
-
-export default SocketHandler;
+}

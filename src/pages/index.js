@@ -1,8 +1,7 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { io } from "socket.io-client";
 import {
   AppBar,
   Toolbar,
@@ -38,7 +37,6 @@ import DashboardIcon from "@mui/icons-material/Dashboard";
 import EventNoteIcon from "@mui/icons-material/EventNote";
 import InventoryIcon from "@mui/icons-material/Inventory";
 import TextsmsIcon from "@mui/icons-material/Textsms";
-import RequestQuoteIcon from "@mui/icons-material/RequestQuote";
 import PersonIcon from "@mui/icons-material/Person";
 import LogoutIcon from "@mui/icons-material/Logout";
 import GroupIcon from "@mui/icons-material/Group";
@@ -49,7 +47,7 @@ import ChatsList from "@/components/messages/ChatsList";
 import MenuIcon from "@mui/icons-material/Menu";
 import ForumIcon from "@mui/icons-material/Forum";
 
-const Dashboard = ({ session2 }) => {
+const Dashboard = ({ session2, ably }) => {
   const router = useRouter();
   const [value, setValue] = useState(0);
   const [projects, setProjects] = useState([]);
@@ -63,37 +61,133 @@ const Dashboard = ({ session2 }) => {
   const [loading, setLoading] = useState(false);
   const [chats, setChats] = useState([]);
   const [selectedChat, setSelectedChat] = useState(null);
+  const [onlineUserIds, setOnlineUserIds] = useState([]);
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = useState(null);
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
-  const [socket, setSocket] = useState(null);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
 
+  const selectedChatRef = useRef(selectedChat);
   useEffect(() => {
-    // Initialize the socket connection when the component mounts
-    fetch("/api/socket");
-  }, []);
+    selectedChatRef.current = selectedChat;
+  }, [selectedChat]);
 
-  // Initialize Socket.IO connection
+  // Listen for incoming messages and update unread messages count
   useEffect(() => {
-    // const newSocket = io("https://kitchen-lyft-demo-gamma.vercel.app", {
-    //   transports: ["polling"],
-    // });
-    const newSocket = io();
-    setSocket(newSocket);
+    if (ably) {
+      const channel = ably.channels.get("chat");
 
-    // Log socket connection status
-    newSocket.on("connect", () => {
-      console.log("Socket connected:", newSocket.id);
-    });
+      // To track online users
+      // const updateOnlineUsers = () => {
+      //   console.log("updateOnlineUsers called");
+      //   channel.presence.get((err, members) => {
+      //     if (err) {
+      //       console.error("Error fetching presence members:", err);
+      //       return;
+      //     }
+      //     if (members.length === 0) {
+      //       console.log("No members found in presence.");
+      //     } else {
+      //       console.log("membeeeeeeeers:", members);
+      //     }
+      //     // Update the onlineUserIds state with the clientIds of online users
+      //     setOnlineUserIds(members.map((member) => member.clientId));
+      //   });
+      // };
 
-    newSocket.on("disconnect", () => {
-      console.log("Socket disconnected");
-    });
+      // /// Check for presence updates (when someone joins or leaves)
+      // channel.presence.subscribe("enter", (presenceMessage) => {
+      //   const { action, clientId } = presenceMessage;
+      //   console.log("Presence update:", action, "from:", clientId);
+      //   // Update the list of channel members when the presence set changes
+      //   channel.presence.get((err, members) => {
+      //     if (err) {
+      //       return console.error(`Error retrieving presence data: ${err}`);
+      //     }
+      //     members.map((member) => {
+      //       console.log("memberaaa:", member);
+      //     });
+      //   });
+      //   updateOnlineUsers();
+      // });
+      // channel.presence.subscribe("leave", () => {
+      //   console.log("A user left the channel"); // Check if this logs
+      //   updateOnlineUsers();
+      // });
 
-    return () => {
-      newSocket.disconnect(); // Clean up the socket connection when the component unmounts
-    };
-  }, []);
+      // // Initialize presence
+      // updateOnlineUsers();
+
+      const handleMessage = (message) => {
+        const updatedChat = message.data;
+
+        // Mark message as read by adding the user's ID to the readBy array
+        if (
+          selectedChatRef.current &&
+          selectedChatRef.current._id === updatedChat._id
+        ) {
+          updatedChat.messages[updatedChat.messages.length - 1].readBy.push(
+            session2.user.id
+          );
+        }
+
+        setSelectedChat((prevChat) => {
+          if (prevChat && prevChat._id === updatedChat._id) {
+            return {
+              ...prevChat,
+              messages: [
+                ...prevChat.messages,
+                updatedChat.messages[updatedChat.messages.length - 1],
+              ],
+            };
+          }
+          return prevChat;
+        });
+
+        setChats((prevChats) =>
+          prevChats.map((chat) =>
+            chat._id === updatedChat._id
+              ? { ...chat, messages: updatedChat.messages }
+              : chat
+          )
+        );
+
+        chat &&
+          setChat((chat) =>
+            chat._id === updatedChat._id
+              ? { ...chat, messages: updatedChat.messages }
+              : chat
+          );
+      };
+
+      const handleJoinProject = async () => {
+        try {
+          const res = await fetch("/api/unread-messages");
+          if (res.ok) {
+            const data = await res.json();
+            // console.log("i was called:", data);
+            setUnreadMessagesCount(data.unreadCount);
+          } else {
+            console.error("Failed to fetch unread messages count");
+          }
+        } catch (error) {
+          console.error("Error fetching unread messages count:", error);
+        }
+      };
+
+      channel.subscribe("new_message", handleMessage);
+      channel.subscribe("join_project", handleJoinProject);
+
+      channel.presence.enter();
+      // Clean up the subscription when the component unmounts or when selectedChat changes
+      return () => {
+        channel.unsubscribe("new_message", handleMessage);
+        channel.unsubscribe("join_project", handleJoinProject);
+        // channel.presence.unsubscribe("enter", updateOnlineUsers);
+        // channel.presence.unsubscribe("leave", updateOnlineUsers);
+        channel.presence.leave();
+      };
+    }
+  }, [ably, selectedChat]);
 
   const handleMobileMenuClose = () => {
     setMobileMoreAnchorEl(null);
@@ -134,9 +228,37 @@ const Dashboard = ({ session2 }) => {
         <p>Orders</p>
       </MenuItem>
       <MenuItem onClick={() => handleChange(null, 3)}>
-        <IconButton color="inherit">
-          <TextsmsIcon />
-        </IconButton>
+        <Box
+          sx={{
+            position: "relative",
+            margin: "0 !important",
+            display: "flex",
+          }}
+        >
+          <IconButton color="inherit">
+            <TextsmsIcon />
+          </IconButton>
+          {unreadMessagesCount > 0 && (
+            <Box
+              sx={{
+                position: "absolute",
+                top: 0,
+                right: 0,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "18px",
+                height: "18px",
+                borderRadius: "50%",
+                backgroundColor: "red",
+                color: "white",
+                fontSize: "0.75rem",
+              }}
+            >
+              {unreadMessagesCount >= 10 ? "9+" : unreadMessagesCount}
+            </Box>
+          )}
+        </Box>
         <p>Messages</p>
       </MenuItem>
       {(session2.user.role === "CorporateAdmin" ||
@@ -236,7 +358,10 @@ const Dashboard = ({ session2 }) => {
   }, []);
 
   useEffect(() => {
-    if (session2.user.role === "CorporateAdmin") {
+    if (
+      session2.user.role === "CorporateAdmin" ||
+      session2.user.role === "FranchiseAdmin"
+    ) {
       const fetchUsers = async () => {
         try {
           setLoading(true);
@@ -321,7 +446,7 @@ const Dashboard = ({ session2 }) => {
   const handleAddUser = async (newUser) => {
     try {
       setLoading(true);
-      console.log("newUser:", newUser);
+      // console.log("newUser:", newUser);
       const response = await fetch("/api/users", {
         method: "POST",
         headers: {
@@ -405,7 +530,9 @@ const Dashboard = ({ session2 }) => {
     const data = await response.json();
     setValue(3);
     setSelectedChat(data);
-    socket.emit("join_project", data.projectId);
+    if (ably) {
+      ably.channels.get("chat").publish("join_project", data.projectId);
+    }
     setLoading(false);
   };
 
@@ -428,7 +555,6 @@ const Dashboard = ({ session2 }) => {
     setLoading(true);
     const response = await fetch("/api/messages");
     const data = await response.json();
-    console.log("chats daataaaaa:", data);
     setChats(data);
     setLoading(false);
   };
@@ -439,90 +565,79 @@ const Dashboard = ({ session2 }) => {
   }, []);
 
   useEffect(() => {
-    if (selectedChat && socket) {
-      socket.emit(
-        "join_project",
-        selectedChat.projectId?._id || selectedChat.projectId
-      );
-      console.log(
-        "Joined project room:",
-        selectedChat.projectId?._id || selectedChat.projectId
-      );
-
-      return () => {
-        socket.off("join_project");
-      };
-    }
-  }, [selectedChat, socket]);
-
-  // Listen for incoming messages and update unread messages count
-  useEffect(() => {
-    if (socket) {
-      socket.on("message", async (updatedChat) => {
-        console.log("Received updated chat:", updatedChat);
-        setSelectedChat((prevChat) => ({
-          ...prevChat,
-          messages: [
-            ...prevChat.messages,
-            updatedChat.messages[updatedChat.messages.length - 1],
-          ],
-        }));
-
-        setChats((prevChats) =>
-          prevChats.map((chat) =>
-            chat._id === updatedChat._id
-              ? { ...chat, messages: updatedChat.messages }
-              : chat
-          )
+    if (selectedChat && ably) {
+      ably.channels
+        .get("chat")
+        .publish(
+          "join_project",
+          selectedChat.projectId?._id || selectedChat.projectId
         );
-        // chat && console.log("chaatoo:", chat);
-        chat &&
-          setChat((chat) =>
-            chat._id === updatedChat._id
-              ? { ...chat, messages: updatedChat.messages }
-              : chat
-          );
-      });
-
-      socket.on("update_unread_count", async () => {
-        try {
-          const res = await fetch("/api/unread-messages");
-          if (res.ok) {
-            const data = await res.json();
-            console.log("Unread messages:", data.unreadCount);
-            setUnreadMessagesCount(data.unreadCount);
-          } else {
-            console.error("Failed to fetch unread messages count");
-          }
-        } catch (error) {
-          console.error("Error fetching unread messages count:", error);
-        }
-      });
-
       return () => {
-        socket.off("message");
-        socket.off("update_unread_count");
+        ably.channels.get("chat").unsubscribe();
       };
     }
-  }, [socket]);
+  }, [selectedChat, ably]);
 
   const handleSend = async (text) => {
-    if (socket) {
-      console.log(
-        "selectedChat.projectId:",
-        selectedChat.projectId,
-        "text",
-        text
-      );
-      socket.emit("new_message", {
-        projectId: selectedChat.projectId,
-        text,
-        senderId: session2.user.id,
-      });
+    if (ably && selectedChat) {
+      const channel = ably.channels.get("chat");
+
+      try {
+        // Subscribe to the presence set to receive updates
+        // await channel.presence.subscribe((presenceMessage) => {
+        //   const { action, clientId } = presenceMessage;
+        //   console.log("Presence update:", action, "from:", clientId);
+
+        //   // Update the list of channel members when the presence set changes
+        //   channel.presence.get((err, members) => {
+        //     if (err) {
+        //       return console.error(`Error retrieving presence data: ${err}`);
+        //     }
+        //     members.map((member) => {
+        //       console.log(member.clientId);
+        //     });
+        //   });
+        // });
+        // console.log("onlineUserIds shshshshs", onlineUserIds);
+
+        const response = await fetch("/api/messages", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            projectId: selectedChat.projectId._id || selectedChat.projectId,
+            text,
+            senderId: session2.user.id,
+          }),
+        });
+
+        if (response.ok) {
+          const populatedChat = await response.json();
+
+          // Retry logic if the channel is in a suspended state
+          const publishMessage = async () => {
+            try {
+              await channel.publish("new_message", populatedChat);
+              await channel.publish("join_project", selectedChat.projectId);
+            } catch (error) {
+              console.error("Error publishing message:", error);
+              setTimeout(publishMessage, 2000); // Retry after 2 seconds
+            }
+          };
+
+          publishMessage();
+        } else {
+          console.error("Failed to send message");
+        }
+      } catch (error) {
+        console.error("Error sending message:", error);
+      }
     } else {
-      console.error("Socket is not initialized");
+      console.error("Ably is not initialized or selectedChat is null");
     }
   };
+
   return (
     <>
       <Loader open={loading} />
@@ -926,11 +1041,13 @@ const Dashboard = ({ session2 }) => {
                     <ChatsList
                       chats={chats}
                       fetchMessages={(projectId) => {
-                        if (socket) {
+                        if (ably) {
                           fetchMessages(projectId);
-                          socket.emit("join_project", projectId);
+                          ably.channels
+                            .get("chat")
+                            .publish("join_project", projectId);
                         } else {
-                          console.error("Socket is not initialized");
+                          console.error("Ably is not initialized");
                         }
                       }}
                       tabValue={0}

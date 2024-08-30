@@ -57,58 +57,46 @@ export default async function handler(req, res) {
     console.error("⚠️  Webhook signature verification failed.", err.message);
     return res.status(400).send(`Webhook Error: ${err.message}`);
   }
-
   // console.log("Received event:", event.type);
 
   switch (event.type) {
     case "checkout.session.completed":
       const session = event.data.object;
+      const { userId, projectId, paymentType, totalAmount } = session.metadata;
       // console.log("Checkout session completed:", session);
-      // Find the order using the session ID from metadata
-      const order = await Order.findOne({
-        _id: session.metadata.orderId,
-      }).populate("projectId");
+      const project = await Project.findById(projectId).populate("user_id");
+      if (!project) {
+        return res.status(404).json({ message: "Project not found" });
+      }
 
-      if (!order) {
-        console.error(
-          "Order not found for payment intent:",
-          session.payment_intent
-        );
-        return res.status(404).json({ error: "Order not found" });
-      }
-      // console.log("webhook order:", order);
-      const project = await Project.findById(order.projectId._id).populate(
-        "user_id"
-      );
-      // console.log(
-      //   "session.metadata.paymentType:",
-      //   session.metadata.paymentType
-      // );
-
-      // Determine if this is the first or second payment based on the session ID
-      if (session.metadata.paymentType === "first") {
-        order.firstPayment.status = "Completed";
-        order.status = "Paid";
-        project.status = "Paid";
-        await sendPaymentConfirmationEmail(order, project, true);
-      } else if (session.metadata.paymentType === "second") {
-        order.secondPayment.status = "Completed";
-        order.status = "Completed";
-        project.status = "Shipped";
-        await sendPaymentConfirmationEmail(order, project, false);
-      }
-      console.log("sessiooon from webhooook:", session);
-      // Save the payment intent ID if available
-      if (session.payment_intent) {
-        if (session.metadata.paymentType === "first") {
-          order.firstPayment.paymentIntentId = session.payment_intent;
-        } else if (session.metadata.paymentType === "second") {
-          order.secondPayment.paymentIntentId = session.payment_intent;
-        }
-      }
+      const order = new Order({
+        projectId: projectId,
+        userId: userId, // Stripe customer ID
+        totalAmount: totalAmount, // Convert from cents to dollars
+        stripeCustomerId: session.customer, // Save Stripe customer ID
+        status: "Paid",
+        firstPayment: {
+          amount: session.amount_total / 100, // First payment amount (50%)
+          status: paymentType === "first" ? "Completed" : "Pending",
+          paymentIntentId: session.payment_intent,
+          paymentMethodId: session.payment_method,
+        },
+        secondPayment: {
+          amount: session.amount_total / 100, // Second payment amount (50%)
+          status: paymentType === "second" ? "Completed" : "Pending",
+        },
+      });
 
       await order.save();
+
+      project.status = paymentType === "first" ? "Paid" : "Shipped";
       await project.save();
+
+      await sendPaymentConfirmationEmail(
+        order,
+        project,
+        paymentType === "first"
+      );
 
       break;
 
