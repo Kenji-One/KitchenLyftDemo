@@ -8,6 +8,7 @@ import multer from "multer";
 import cloudinary from "@/utils/cloudinary";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "./auth/[...nextauth]";
+import { sendPaymentEmail } from "@/utils/email";
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -217,7 +218,10 @@ const handler = async (req, res) => {
 
           const updatedProject = await project.save();
           // If the status is changed to "Shipped," capture the second payment
-          const order = await Order.findOne({ projectId: id });
+          const order = await Order.findOne({ projectId: id }).populate(
+            "userId",
+            "username email"
+          );
           let paymentMessage = "";
           if (
             status === "Shipped" &&
@@ -232,6 +236,9 @@ const handler = async (req, res) => {
                 message: "Second payment already completed or not required.",
               });
             }
+            const subject = `Kitchen Lyft Order Confirmation #${order._id} [2/2]`;
+
+            const text = `We are pleased to confirm that we have completed the production of materials for ${updatedProject.title} and have shipped them to you. The second payment has been charged.`;
 
             try {
               // Retrieve the first PaymentIntent
@@ -264,7 +271,7 @@ const handler = async (req, res) => {
               order.secondPayment.status = "Completed";
               order.status = "Completed";
               await order.save();
-
+              sendPaymentEmail(order.userId.email, subject, text);
               paymentMessage =
                 "Second Payment was successful, product is ready for shipping!";
             } catch (paymentError) {
