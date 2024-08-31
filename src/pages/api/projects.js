@@ -151,7 +151,7 @@ const handler = async (req, res) => {
         const removedImagesArray = JSON.parse(removedImages || "[]");
         const existingImagesArray = JSON.parse(existingImages || "[]");
         let imageUrls = [];
-        // console.log("files:", req);
+
         if (req.files && req.files.length > 0) {
           try {
             const uploadPromises = req.files.map((file) => {
@@ -179,7 +179,10 @@ const handler = async (req, res) => {
           if (!project) {
             return res.status(404).json({ message: "Project not found" });
           }
-          if (project.user_id.toString() !== session.user.id) {
+          if (
+            project.user_id.toString() !== session.user.id &&
+            session.user.role !== "CorporateAdmin"
+          ) {
             return res.status(403).json({ message: "Forbidden" });
           }
 
@@ -214,9 +217,12 @@ const handler = async (req, res) => {
 
           const updatedProject = await project.save();
           // If the status is changed to "Shipped," capture the second payment
-          if (status === "Shipped") {
-            const order = await Order.findOne({ projectId: id });
-
+          const order = await Order.findOne({ projectId: id });
+          let paymentMessage = "";
+          if (
+            status === "Shipped" &&
+            order.secondPayment.status !== "Completed"
+          ) {
             if (!order) {
               return res.status(404).json({ message: "Order not found" });
             }
@@ -234,11 +240,9 @@ const handler = async (req, res) => {
               );
 
               if (!firstPaymentIntent.payment_method) {
-                return res
-                  .status(400)
-                  .json({
-                    message: "No payment method found for the first payment.",
-                  });
+                return res.status(400).json({
+                  message: "No payment method found for the first payment.",
+                });
               }
 
               const paymentMethodId = firstPaymentIntent.payment_method;
@@ -260,6 +264,9 @@ const handler = async (req, res) => {
               order.secondPayment.status = "Completed";
               order.status = "Completed";
               await order.save();
+
+              paymentMessage =
+                "Second Payment was successful, product is ready for shipping!";
             } catch (paymentError) {
               console.error("Error capturing second payment:", paymentError);
               return res.status(500).json({
@@ -269,7 +276,10 @@ const handler = async (req, res) => {
             }
           }
 
-          res.status(200).json(updatedProject);
+          const responseMessage =
+            paymentMessage || "Project was updated successfully";
+
+          res.status(200).json({ updatedProject, message: responseMessage });
         } catch (error) {
           console.error("Error updating project:", error);
           res.status(500).json({ message: "Error updating project", error });

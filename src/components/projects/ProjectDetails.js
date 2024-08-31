@@ -148,7 +148,7 @@ const ProjectDetails = ({
             >
               Edit Project
             </Button>
-            {quote && project.status !== "Paid" && (
+            {quote && project.status === "Awaiting Payment" && (
               <Button
                 variant="contained"
                 onClick={handleCompleteOrder}
@@ -162,7 +162,8 @@ const ProjectDetails = ({
                 Complete Order
               </Button>
             )}
-            {project.status !== "Paid" && (
+            {(project.status === "Awaiting Payment" ||
+              project.status === "In Progress") && (
               <Button
                 variant="contained"
                 onClick={() => letsGenerateQuote()}

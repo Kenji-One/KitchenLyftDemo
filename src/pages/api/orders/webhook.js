@@ -3,7 +3,6 @@ import stripe from "@/utils/ourStripe";
 import connectDB from "@/utils/db";
 import Order from "@/models/Order";
 import Project from "@/models/Project";
-import User from "@/models/User";
 import nodemailer from "nodemailer";
 
 export const config = {

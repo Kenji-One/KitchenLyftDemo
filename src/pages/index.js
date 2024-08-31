@@ -667,7 +667,7 @@ const Dashboard = ({ session2, ably }) => {
             color="inherit"
             aria-label="open drawer"
             sx={{
-              display: { xs: "flex", md: "none" },
+              display: { xs: "flex", md2: "none" },
               backgroundColor: "#3237401A",
               "&:hover": {
                 backgroundColor: "rgba(50, 55, 64, 0.2)",
@@ -686,8 +686,8 @@ const Dashboard = ({ session2, ably }) => {
             sx={{
               display: "flex",
               alignItems: "center",
-              gap: { xs: "8px", sm: "16px", md: "24px", lg: "32px" },
-              flex: { xs: "unset", md: "1 0 auto" },
+              gap: { xs: "8px", sm: "16px", md3: "24px", lg: "32px" },
+              flex: { xs: "unset", md2: "1 0 auto" },
             }}
           >
             <img
@@ -711,15 +711,26 @@ const Dashboard = ({ session2, ably }) => {
               scrollButtons="auto"
               aria-label="header scrollable tabs"
               sx={{
+                flexGrow: 1, // Allow the tabs to take up available space
                 "& .MuiTabs-scroller": {
-                  maxWidth: { md: "300px", lg2: "916px" },
+                  maxWidth: "550px",
+                  flexGrow: 1,
+                  flexShrink: 1,
                 },
                 "& .MuiButtonBase-root.MuiTab-root.MuiTab-textColorPrimary": {
-                  padding: "24px 0",
+                  // padding: "24px 0",
+                  // flexDirection: "row",
+                  // alignItems: "center",
+                  // gap: "12px",
+                  // flexShrink: 0,
+                  minWidth: 0, // Remove the default min width
+                  flexShrink: 1, // Allow tabs to shrink
+                  flexGrow: "unset", // Allow tabs to grow
+                  padding: "0", // Adjust padding for better responsiveness
+                  textTransform: "none",
                   flexDirection: "row",
                   alignItems: "center",
-                  gap: "12px",
-                  flexShrink: 0,
+                  gap: "8px",
                 },
                 "& .MuiButtonBase-root.MuiTab-root.MuiTab-textColorPrimary, .MuiButtonBase-root.MuiTab-root.MuiTab-textColorPrimary > svg":
                   {
@@ -733,9 +744,12 @@ const Dashboard = ({ session2, ably }) => {
                   backgroundColor: "#9A7F49",
                 },
                 "& .MuiTabs-flexContainer": {
-                  gap: { xs: "4px", sm: "12px", md: "32px" },
+                  display: "flex",
+                  // justifyContent: "space-between", // Ensure tabs spread evenly
+                  flexWrap: "nowrap",
+                  gap: { xs: "4px", sm: "12px", md: "24px", lg: "32px" },
                 },
-                display: { xs: "none", md: "flex" },
+                display: { xs: "none", md2: "flex" },
               }}
             >
               <Tab
