@@ -228,11 +228,26 @@ const handler = async (req, res) => {
             }
 
             try {
+              // Retrieve the first PaymentIntent
+              const firstPaymentIntent = await stripe.paymentIntents.retrieve(
+                order.firstPayment.paymentIntentId
+              );
+
+              if (!firstPaymentIntent.payment_method) {
+                return res
+                  .status(400)
+                  .json({
+                    message: "No payment method found for the first payment.",
+                  });
+              }
+
+              const paymentMethodId = firstPaymentIntent.payment_method;
+
               const paymentIntent = await stripe.paymentIntents.create({
                 amount: Math.round(order.secondPayment.amount * 100), // amount in cents
                 currency: "usd",
                 customer: order.stripeCustomerId, // Use stored Stripe customer ID
-                payment_method: order.firstPayment.paymentIntentId,
+                payment_method: paymentMethodId,
                 off_session: true,
                 confirm: true,
                 metadata: {
