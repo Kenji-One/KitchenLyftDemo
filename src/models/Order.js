@@ -14,7 +14,13 @@ const orderSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["Awaiting Payment", "Paid", "In Production", "Shipped"],
+      enum: [
+        "Awaiting Payment",
+        "Paid",
+        "In Production",
+        "Shipped",
+        "Completed",
+      ],
       default: "Awaiting Payment",
     },
     totalAmount: {
