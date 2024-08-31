@@ -19,6 +19,11 @@ export default async function handler(req, res) {
 
       const stripeSession = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
+        mode: "payment", // Continue using the payment mode
+        customer_creation: "always",
+        payment_intent_data: {
+          setup_future_usage: "off_session", // Save the payment method for future use
+        },
         line_items: [
           {
             price_data: {
@@ -26,13 +31,11 @@ export default async function handler(req, res) {
               product_data: {
                 name: `Payment for project #${projectId} - First payment`,
               },
-              unit_amount: Math.round((totalAmount / 2) * 100), // 50%
+              unit_amount: Math.round((totalAmount / 2) * 100), // 50% of the total amount
             },
             quantity: 1,
           },
         ],
-        mode: "payment",
-        customer_creation: "always",
         success_url: `${req.headers.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${req.headers.origin}/cancelled`,
         metadata: {

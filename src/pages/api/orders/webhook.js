@@ -68,36 +68,32 @@ export default async function handler(req, res) {
       if (!project) {
         return res.status(404).json({ message: "Project not found" });
       }
+      if (paymentType === "first") {
+        const order = new Order({
+          projectId: projectId,
+          userId: userId, // Stripe customer ID
+          totalAmount: parseFloat(totalAmount), // Convert from cents to dollars
+          stripeCustomerId: session.customer, // Save Stripe customer ID
+          status: "Paid",
+          firstPayment: {
+            amount: session.amount_total / 100, // First payment amount (50%)
+            status: "Completed",
+            paymentIntentId: session.payment_intent,
+            paymentMethodId: session.payment_method || "blee",
+          },
+          secondPayment: {
+            amount: session.amount_total / 100, // Second payment amount (50%)
+            status: "Pending",
+          },
+        });
 
-      const order = new Order({
-        projectId: projectId,
-        userId: userId, // Stripe customer ID
-        totalAmount: totalAmount, // Convert from cents to dollars
-        stripeCustomerId: session.customer, // Save Stripe customer ID
-        status: "Paid",
-        firstPayment: {
-          amount: session.amount_total / 100, // First payment amount (50%)
-          status: paymentType === "first" ? "Completed" : "Pending",
-          paymentIntentId: session.payment_intent,
-          paymentMethodId: session.payment_method,
-        },
-        secondPayment: {
-          amount: session.amount_total / 100, // Second payment amount (50%)
-          status: paymentType === "second" ? "Completed" : "Pending",
-        },
-      });
+        await order.save();
 
-      await order.save();
+        project.status = "Paid";
+        await project.save();
 
-      project.status = paymentType === "first" ? "Paid" : "Shipped";
-      await project.save();
-
-      await sendPaymentConfirmationEmail(
-        order,
-        project,
-        paymentType === "first"
-      );
-
+        await sendPaymentConfirmationEmail(order, project, true);
+      }
       break;
 
     // case "payment_intent.succeeded":

@@ -179,10 +179,7 @@ const handler = async (req, res) => {
           if (!project) {
             return res.status(404).json({ message: "Project not found" });
           }
-          if (
-            session.user.role !== "CorporateAdmin" &&
-            project.user_id.toString() !== session.user.id
-          ) {
+          if (project.user_id.toString() !== session.user.id) {
             return res.status(403).json({ message: "Forbidden" });
           }
 
@@ -224,10 +221,7 @@ const handler = async (req, res) => {
               return res.status(404).json({ message: "Order not found" });
             }
 
-            if (
-              !order.secondPayment ||
-              order.secondPayment.status === "Completed"
-            ) {
+            if (order.secondPayment.status === "Completed") {
               return res.status(400).json({
                 message: "Second payment already completed or not required.",
               });
@@ -238,7 +232,7 @@ const handler = async (req, res) => {
                 amount: Math.round(order.secondPayment.amount * 100), // amount in cents
                 currency: "usd",
                 customer: order.stripeCustomerId, // Use stored Stripe customer ID
-                payment_method: order.firstPayment.paymentMethodId,
+                payment_method: order.firstPayment.paymentIntentId,
                 off_session: true,
                 confirm: true,
                 metadata: {
