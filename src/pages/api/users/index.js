@@ -3,6 +3,7 @@ import User from "@/models/User";
 import bcrypt from "bcryptjs";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]";
+import { sendPaymentEmail } from "@/utils/email";
 
 export default async function handler(req, res) {
   const session = await getServerSession(req, res, authOptions);
@@ -21,10 +22,15 @@ export default async function handler(req, res) {
   switch (req.method) {
     case "POST":
       const { username, password, email, role } = req.body;
+      const subject = `Kitchen Lyft User Creation - ${username}`;
+
+      const text = `Kitchen Lyft account was created for you, your role: ${role} - you can login there with this credetialsm - username: ${username}, password: ${password}.`;
+
       const passwordHash = bcrypt.hashSync(password, 10);
       const newUser = new User({ username, passwordHash, email, role });
       try {
         await newUser.save();
+        sendPaymentEmail(email, subject, text);
         res.status(201).json(newUser);
       } catch (error) {
         res.status(400).json({ error: error.message });
