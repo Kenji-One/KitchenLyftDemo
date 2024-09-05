@@ -55,7 +55,7 @@ export default async function handler(req, res) {
           userId: session.user.id,
           projectId: projectId,
           paymentType: "first",
-          totalAmount: totalAmount,
+          totalAmount: Math.round(totalAmount * conversionRate * 100),
         },
         customer_email: session.user.email,
       });
