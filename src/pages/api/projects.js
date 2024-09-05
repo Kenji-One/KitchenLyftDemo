@@ -9,6 +9,7 @@ import cloudinary from "@/utils/cloudinary";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "./auth/[...nextauth]";
 import { sendPaymentEmail } from "@/utils/email";
+import { getExchangeRates } from "@/utils/email";
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
@@ -254,9 +255,24 @@ const handler = async (req, res) => {
 
               const paymentMethodId = firstPaymentIntent.payment_method;
 
+              const exchangeRates = await getExchangeRates();
+              const canadianCities = ["Montreal", "Toronto"];
+              const usCities = ["Miami", "New York", "New Jersey"];
+
+              let currency = "cad";
+              let amount = Math.round(order.secondPayment.amount * 100); // default to CAD
+
+              if (usCities.includes(project.location)) {
+                currency = "usd";
+                const conversionRate = exchangeRates.USD;
+                amount = Math.round(
+                  order.secondPayment.amount * conversionRate * 100
+                );
+              }
+
               const paymentIntent = await stripe.paymentIntents.create({
-                amount: Math.round(order.secondPayment.amount * 100), // amount in cents
-                currency: "usd",
+                amount: amount, // amount in cents
+                currency: currency,
                 customer: order.stripeCustomerId, // Use stored Stripe customer ID
                 payment_method: paymentMethodId,
                 off_session: true,

@@ -48,3 +48,14 @@ export const sendPaymentEmail = async (email, subject, text) => {
     throw new Error("There was an error sending the payment email.");
   }
 };
+
+export async function getExchangeRates() {
+  const response = await fetch(
+    "https://api.exchangerate-api.com/v4/latest/CAD"
+  );
+  if (!response.ok) {
+    throw new Error("Failed to fetch exchange rates");
+  }
+  const data = await response.json();
+  return data.rates;
+}

@@ -54,9 +54,41 @@ const handler = async (req, res) => {
         res.status(500).json({ message: "Error creating quote", error });
       }
       break;
+    case "PUT":
+      try {
+        const { quoteId, ...updateData } = req.body;
+
+        const quote = await Quote.findById(quoteId);
+        if (!existingQuote) {
+          return res.status(404).json({ message: "Quote not found" });
+        }
+
+        // Check if the user is the creator of the quote or has CorporateAdmin role
+        if (
+          quote.user_id.toString() !== session.user.id &&
+          session.user.role !== "CorporateAdmin"
+        ) {
+          return res.status(403).json({ message: "Forbidden" });
+        }
+
+        Object.assign(quote, updateData);
+        await quote.save();
+
+        // const project = await Project.findById(quote.projectId);
+        // if (project && updateData.price) {
+        //   project.status = "Awaiting Payment";
+        //   await project.save();
+        // }
+
+        res.status(200).json(quote);
+      } catch (error) {
+        console.error("Error updating quote:", error);
+        res.status(500).json({ message: "Error updating quote", error });
+      }
+      break;
 
     default:
-      res.setHeader("Allow", ["GET", "POST"]);
+      res.setHeader("Allow", ["GET", "POST", "PUT"]);
       res.status(405).end(`Method ${req.method} Not Allowed`);
       break;
   }

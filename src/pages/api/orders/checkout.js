@@ -3,7 +3,7 @@ import connectDB from "@/utils/db";
 import Order from "@/models/Order";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]";
-import { sendPaymentEmail } from "@/utils/email";
+import { getExchangeRates } from "@/utils/email";
 
 export default async function handler(req, res) {
   await connectDB();
@@ -15,7 +15,20 @@ export default async function handler(req, res) {
 
   if (req.method === "POST") {
     try {
-      const { projectId, totalAmount } = req.body;
+      const { projectId, totalAmount, projectLocation } = req.body;
+
+      const exchangeRates = await getExchangeRates();
+      const canadianCities = ["Montreal", "Toronto"];
+      const usCities = ["Miami", "New York", "New Jersey"];
+
+      let currency = "cad";
+      let amount = Math.round((totalAmount / 2) * 100); // default to CAD
+
+      if (usCities.includes(projectLocation)) {
+        currency = "usd";
+        const conversionRate = exchangeRates.USD;
+        amount = Math.round(((totalAmount * conversionRate) / 2) * 100);
+      }
 
       const stripeSession = await stripe.checkout.sessions.create({
         payment_method_types: ["card"],
@@ -27,11 +40,11 @@ export default async function handler(req, res) {
         line_items: [
           {
             price_data: {
-              currency: "usd",
+              currency: currency,
               product_data: {
                 name: `Payment for project #${projectId} - First payment`,
               },
-              unit_amount: Math.round((totalAmount / 2) * 100), // 50% of the total amount
+              unit_amount: amount, // 50% of the total amount
             },
             quantity: 1,
           },

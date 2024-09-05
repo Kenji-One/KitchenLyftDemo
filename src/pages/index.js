@@ -920,6 +920,7 @@ const Dashboard = ({ session2, ably }) => {
                 />
               ) : (
                 <GenerateQuoteForm
+                  quote={quote}
                   selectedProject={selectedProject}
                   setThereIsClickForQoute={setThereIsClickForQoute}
                   handleProjectClick={handleProjectClick}

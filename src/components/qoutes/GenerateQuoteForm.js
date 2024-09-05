@@ -284,77 +284,81 @@ const categoriesWithFormulas = [
 const categoriesWithStandardPrices = ["handles", "hinges"];
 
 const GenerateQuoteForm = ({
+  quote,
   selectedProject,
   setThereIsClickForQoute,
   handleProjectClick,
 }) => {
   const [loading, setLoading] = useState(false);
-  const [quoteDetails, setQuoteDetails] = useState({
-    projectTemplate: selectedProject,
-    doors: [
-      {
-        material: "",
-        width: "",
-        height: "",
-        quantity: "",
-        color: "",
-        sku: { skuCode: "", catalog: "" },
-      },
-    ],
-    drawerFronts: [
-      {
-        material: "",
-        width: "",
-        height: "",
-        quantity: "",
-        color: "",
-        sku: { skuCode: "", catalog: "" },
-      },
-    ],
-    sidePanels: [
-      {
-        material: "",
-        width: "",
-        height: "",
-        quantity: "",
-        color: "",
-        sku: { skuCode: "", catalog: "" },
-      },
-    ],
-    kickPlates: [
-      {
-        material: "",
-        width: "",
-        height: "",
-        quantity: "",
-        color: "",
-        sku: { skuCode: "", catalog: "" },
-      },
-    ],
-    trim: [
-      {
-        material: "",
-        width: "",
-        height: "",
-        quantity: "",
-        color: "",
-        sku: { skuCode: "", catalog: "" },
-      },
-    ],
-    finishingTouch: [
-      {
-        sku: { skuCode: "", catalog: "" },
-        width: "",
-        height: "",
-        quantity: "",
-      },
-    ],
-    handles: [
-      { sku: { name: "", skuCode: "", productNumber: "" }, quantity: "" },
-    ],
-    hinges: [{ sku: "", quantity: "" }],
-  });
+  const [quoteDetails, setQuoteDetails] = useState(
+    quote || {
+      projectTemplate: selectedProject,
+      doors: [
+        {
+          material: "",
+          width: "",
+          height: "",
+          quantity: "",
+          color: "",
+          sku: { skuCode: "", catalog: "" },
+        },
+      ],
+      drawerFronts: [
+        {
+          material: "",
+          width: "",
+          height: "",
+          quantity: "",
+          color: "",
+          sku: { skuCode: "", catalog: "" },
+        },
+      ],
+      sidePanels: [
+        {
+          material: "",
+          width: "",
+          height: "",
+          quantity: "",
+          color: "",
+          sku: { skuCode: "", catalog: "" },
+        },
+      ],
+      kickPlates: [
+        {
+          material: "",
+          width: "",
+          height: "",
+          quantity: "",
+          color: "",
+          sku: { skuCode: "", catalog: "" },
+        },
+      ],
+      trim: [
+        {
+          material: "",
+          width: "",
+          height: "",
+          quantity: "",
+          color: "",
+          sku: { skuCode: "", catalog: "" },
+        },
+      ],
+      finishingTouch: [
+        {
+          sku: { skuCode: "", catalog: "" },
+          width: "",
+          height: "",
+          quantity: "",
+        },
+      ],
+      handles: [
+        { sku: { name: "", skuCode: "", productNumber: "" }, quantity: "" },
+      ],
+      hinges: [{ sku: "", quantity: "" }],
+    }
+  );
   const [totalAmount, setTotalAmount] = useState(0);
+  const [errors, setErrors] = useState({});
   const router = useRouter();
   const [successMessage, setSuccessMessage] = useState("");
 
@@ -399,6 +403,55 @@ const GenerateQuoteForm = ({
 
     calculateTotalAmount();
   }, [quoteDetails]);
+
+  const validateForm = () => {
+    const newErrors = {};
+    [...categoriesWithFormulas, ...categoriesWithStandardPrices].forEach(
+      (category) => {
+        quoteDetails[category].forEach((item, index) => {
+          if (
+            !item.material &&
+            categoriesWithFormulas.includes(category) &&
+            category !== "finishingTouch"
+          ) {
+            newErrors[`${category}-${index}-material`] = "Material is required";
+          }
+          if (!item.width && categoriesWithFormulas.includes(category)) {
+            newErrors[`${category}-${index}-width`] = "Width is required";
+          }
+          if (!item.height && categoriesWithFormulas.includes(category)) {
+            newErrors[`${category}-${index}-height`] = "Height is required";
+          }
+          if (!item.quantity) {
+            newErrors[`${category}-${index}-quantity`] = "Quantity is required";
+          }
+          if (
+            !item.color &&
+            [
+              "doors",
+              "drawerFronts",
+              "sidePanels",
+              "kickPlates",
+              "trim",
+            ].includes(category)
+          ) {
+            newErrors[`${category}-${index}-color`] = "Color is required";
+          }
+          if (category === "handles" && !item.sku.skuCode) {
+            newErrors[`${category}-${index}-sku`] = "Handle SKU is required";
+          }
+          if (category === "hinges" && !item.sku) {
+            newErrors[`${category}-${index}-sku`] = "Hinge SKU is required";
+          }
+          if (category === "finishingTouch" && !item.sku.skuCode) {
+            newErrors[`${category}-${index}-sku`] =
+              "Finishing touch SKU is required";
+          }
+        });
+      }
+    );
+    return newErrors;
+  };
 
   const handleInputChange = (event, category, index) => {
     const { name, value } = event.target;
@@ -523,9 +576,22 @@ const GenerateQuoteForm = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
     console.log("quoteDetails:", quoteDetails);
+
+    const validationErrors = validateForm();
+    console.log("quoteDetails validate errors:", Object.keys(validationErrors));
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      setLoading(false);
+      return;
+    }
+
+    const method = quoteDetails?._id ? "PUT" : "POST";
+
     const response = await fetch("/api/quotes", {
-      method: "POST",
+      method: method,
       headers: {
         "Content-Type": "application/json",
       },
@@ -533,82 +599,19 @@ const GenerateQuoteForm = ({
         ...quoteDetails,
         projectId: selectedProject._id,
         price: totalAmount,
+        quoteId: quoteDetails?._id || undefined,
       }),
     });
 
     if (response.ok) {
       setLoading(false);
       setSuccessMessage("Quote generated successfully!");
-      setQuoteDetails({
-        projectTemplate: null,
-        doors: [
-          {
-            material: "",
-            width: "",
-            height: "",
-            quantity: "",
-            color: "",
-            sku: { skuCode: "", catalog: "" },
-          },
-        ],
-        drawerFronts: [
-          {
-            material: "",
-            width: "",
-            height: "",
-            quantity: "",
-            color: "",
-            sku: { skuCode: "", catalog: "" },
-          },
-        ],
-        sidePanels: [
-          {
-            material: "",
-            width: "",
-            height: "",
-            quantity: "",
-            color: "",
-            sku: { skuCode: "", catalog: "" },
-          },
-        ],
-        kickPlates: [
-          {
-            material: "",
-            width: "",
-            height: "",
-            quantity: "",
-            color: "",
-            sku: { skuCode: "", catalog: "" },
-          },
-        ],
-        trim: [
-          {
-            material: "",
-            width: "",
-            height: "",
-            quantity: "",
-            color: "",
-            sku: { skuCode: "", catalog: "" },
-          },
-        ],
-        finishingTouch: [
-          {
-            sku: { skuCode: "", catalog: "" },
-            width: "",
-            height: "",
-            quantity: "",
-          },
-        ],
-        handles: [
-          { sku: { name: "", skuCode: "", productNumber: "" }, quantity: "" },
-        ],
-        hinges: [{ sku: "", quantity: "" }],
-      });
+
       setTimeout(() => {
         setSuccessMessage("");
         setThereIsClickForQoute(false);
         handleProjectClick(selectedProject._id);
-      }, 3000);
+      }, 2000);
     } else {
       console.error("Failed to generate quote");
     }
@@ -639,7 +642,7 @@ const GenerateQuoteForm = ({
             fullWidth
             sx={{ width: "auto" }}
           >
-            Generate
+            {quote ? "Save" : "Generate"}
           </Button>
         </Box>
         {successMessage && (
@@ -711,7 +714,10 @@ const GenerateQuoteForm = ({
                       <>
                         {category !== "finishingTouch" ? (
                           <Box sx={{ gridColumn: "1/-1" }}>
-                            <FormControl fullWidth>
+                            <FormControl
+                              fullWidth
+                              error={!!errors[`${category}-${index}-material`]}
+                            >
                               <Select
                                 sx={{
                                   height: "44px",
@@ -747,7 +753,10 @@ const GenerateQuoteForm = ({
                           </Box>
                         ) : (
                           <Box sx={{ gridColumn: "1/-1" }}>
-                            <FormControl fullWidth>
+                            <FormControl
+                              fullWidth
+                              error={!!errors[`${category}-${index}-sku`]}
+                            >
                               <Select
                                 sx={{ height: "44px" }}
                                 labelId="finishingTouch-label"
@@ -773,24 +782,26 @@ const GenerateQuoteForm = ({
 
                         <Box>
                           <CustomInput
-                            type="text"
+                            type="number"
                             value={item.width}
                             handleChange={(e) =>
                               handleInputChange(e, category, index)
                             }
                             placeholder="Width (in inches)"
                             inputName="width"
+                            error={errors[`${category}-${index}-width`]}
                           />
                         </Box>
                         <Box>
                           <CustomInput
-                            type="text"
+                            type="number"
                             value={item.height}
                             handleChange={(e) =>
                               handleInputChange(e, category, index)
                             }
                             placeholder="Height (in inches)"
                             inputName="height"
+                            error={errors[`${category}-${index}-height`]}
                           />
                         </Box>
                         {category !== "finishingTouch" && (
@@ -798,6 +809,7 @@ const GenerateQuoteForm = ({
                             fullWidth
                             sx={{ gridColumn: "2" }}
                             disabled={!item.material}
+                            error={!!errors[`${category}-${index}-color`]}
                           >
                             <Select
                               sx={{ height: "44px" }}
@@ -830,7 +842,10 @@ const GenerateQuoteForm = ({
                     ) : categoriesWithStandardPrices.includes("handles") &&
                       category === "handles" ? (
                       <Box>
-                        <FormControl fullWidth>
+                        <FormControl
+                          fullWidth
+                          error={!!errors[`${category}-${index}-sku`]}
+                        >
                           <Select
                             sx={{ height: "44px" }}
                             labelId="handle-label"
@@ -854,7 +869,10 @@ const GenerateQuoteForm = ({
                       </Box>
                     ) : category === "hinges" ? (
                       <Box>
-                        <FormControl fullWidth>
+                        <FormControl
+                          fullWidth
+                          error={!!errors[`${category}-${index}-sku`]}
+                        >
                           <Select
                             sx={{ height: "44px" }}
                             labelId="hinges-label"
@@ -878,7 +896,10 @@ const GenerateQuoteForm = ({
                       </Box>
                     ) : (
                       <Box>
-                        <FormControl fullWidth>
+                        <FormControl
+                          fullWidth
+                          error={!!errors[`${category}-${index}-sku`]}
+                        >
                           <Select
                             sx={{ height: "44px" }}
                             labelId="finishingTouch-label"
@@ -908,13 +929,14 @@ const GenerateQuoteForm = ({
                       }}
                     >
                       <CustomInput
-                        type="text"
+                        type="number"
                         value={item.quantity}
                         handleChange={(e) =>
                           handleInputChange(e, category, index)
                         }
                         placeholder="Enter Quantity"
                         inputName="quantity"
+                        error={errors[`${category}-${index}-quantity`]}
                       />
                     </Box>
                     {/* <IconButton

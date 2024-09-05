@@ -63,6 +63,7 @@ const ProjectDetails = ({
         totalAmount: Math.round(
           quote.price * (1 + 0.12 + (project.priority === "High" ? 0.1 : 0))
         ).toFixed(2),
+        projectLocation: project.location,
       }),
     });
 
@@ -174,7 +175,9 @@ const ProjectDetails = ({
                   },
                 }}
               >
-                Generate Quote
+                {project.status === "In Progress"
+                  ? "Generate Quote"
+                  : "Edit Quote"}
               </Button>
             )}
           </Box>
