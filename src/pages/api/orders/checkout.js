@@ -28,6 +28,7 @@ export default async function handler(req, res) {
         currency = "usd";
         const conversionRate = exchangeRates.USD;
         amount = Math.round(((totalAmount * conversionRate) / 2) * 100);
+        totalAmount = Math.round(totalAmount * conversionRate * 100);
       }
 
       const stripeSession = await stripe.checkout.sessions.create({
@@ -55,7 +56,7 @@ export default async function handler(req, res) {
           userId: session.user.id,
           projectId: projectId,
           paymentType: "first",
-          totalAmount: Math.round(totalAmount * conversionRate * 100),
+          totalAmount: totalAmount,
         },
         customer_email: session.user.email,
       });
