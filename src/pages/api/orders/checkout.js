@@ -16,19 +16,19 @@ export default async function handler(req, res) {
   if (req.method === "POST") {
     try {
       const { projectId, totalAmount, projectLocation } = req.body;
-
+      let totalAmountLet = totalAmount;
       const exchangeRates = await getExchangeRates();
       const canadianCities = ["Montreal", "Toronto"];
       const usCities = ["Miami", "New York", "New Jersey"];
 
       let currency = "cad";
-      let amount = Math.round((totalAmount / 2) * 100); // default to CAD
+      let amount = Math.round((totalAmountLet / 2) * 100); // default to CAD
 
       if (usCities.includes(projectLocation)) {
         currency = "usd";
         const conversionRate = exchangeRates.USD;
-        amount = Math.round(((totalAmount * conversionRate) / 2) * 100);
-        totalAmount = Math.round(totalAmount * conversionRate * 100);
+        amount = Math.round(((totalAmountLet * conversionRate) / 2) * 100);
+        totalAmountLet = Math.round(totalAmountLet * conversionRate * 100);
       }
 
       const stripeSession = await stripe.checkout.sessions.create({
@@ -56,7 +56,7 @@ export default async function handler(req, res) {
           userId: session.user.id,
           projectId: projectId,
           paymentType: "first",
-          totalAmount: totalAmount,
+          totalAmount: totalAmountLet,
         },
         customer_email: session.user.email,
       });
