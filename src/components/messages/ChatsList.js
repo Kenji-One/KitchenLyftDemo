@@ -98,7 +98,7 @@ const ChatsList = ({
                       marginBottom: "6px",
                     }}
                   >
-                    {chat.projectId.user_id.username}{" "}
+                    {chat.projectId.user_id.username}
                     <span
                       style={{
                         width: "6px",

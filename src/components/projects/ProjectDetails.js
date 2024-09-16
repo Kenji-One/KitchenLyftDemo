@@ -15,6 +15,7 @@ import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import MessageInput from "../messages/MessageInput";
 import MessageList from "../messages/MessageList";
 import ProjectStatusChip from "./ProjectStatusChip";
+import { generateCSV } from "@/utils/csvGenerator";
 
 const ProjectDetails = ({
   project,
@@ -75,6 +76,22 @@ const ProjectDetails = ({
     } else {
       console.error("Failed to create Stripe checkout session");
     }
+  };
+
+  const handleDownloadCSV = () => {
+    const csv = generateCSV(project, quote);
+
+    // Create a blob from the CSV and create a download link
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `${project.title}_quote.csv`);
+
+    // Append to the document and trigger the download
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -329,15 +346,16 @@ const ProjectDetails = ({
                             variant="body1"
                             sx={{ mb: 0.5 }}
                           >
+                            {item.quantity && `${item.quantity} pcs`}
                             {item.material && `${item.material}, `}
                             {item.color && `${item.color}, `}
-                            {item.sku.skuCode && `SKU: ${item.sku.skuCode}, `}
                             {item.sku.catalog &&
                               `Catalog: ${item.sku.catalog}, `}
+                            {item.sku.skuCode && `SKU: ${item.sku.skuCode}, `}
+
                             {item.width &&
                               item.height &&
                               `${item.width}x${item.height} inches, `}
-                            {item.quantity && `${item.quantity} pcs`}
                             {category.name === "handles" &&
                               item.sku.productNumber &&
                               ` (${item.sku.productNumber})`}
@@ -382,18 +400,33 @@ const ProjectDetails = ({
                 <Box
                   sx={{
                     mb: "120px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: "12px",
+                    flexWrap: "wrap",
                   }}
                 >
-                  <Typography variant="detailsHeading">
-                    Total Quote Price:
-                  </Typography>
-                  <Typography variant="detailsText">
-                    $
-                    {Math.round(
-                      quote.price *
-                        (1 + 0.12 + (project.priority === "High" ? 0.1 : 0))
-                    ).toFixed(2)}
-                  </Typography>
+                  <Box>
+                    <Typography variant="detailsHeading">
+                      Total Quote Price:
+                    </Typography>
+                    <Typography variant="detailsText">
+                      $
+                      {Math.round(
+                        quote.price *
+                          (1 + 0.12 + (project.priority === "High" ? 0.1 : 0))
+                      ).toFixed(2)}
+                    </Typography>
+                  </Box>
+                  <Button
+                    type="submit"
+                    variant="greenBtn"
+                    color="primary"
+                    onClick={handleDownloadCSV}
+                  >
+                    Export as CSV
+                  </Button>
                 </Box>
               </Box>
             ) : (

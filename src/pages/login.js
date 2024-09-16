@@ -9,6 +9,7 @@ import {
   TextField,
   Typography,
   Link,
+  Alert,
 } from "@mui/material";
 import CustomInput from "@/components/helpers/CustomInput";
 import Loader from "@/utils/Loader";
@@ -19,6 +20,7 @@ const LoginPage = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   useEffect(() => {
     // console.log("session:", session);
@@ -30,7 +32,20 @@ const LoginPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    await signIn("credentials", { redirect: false, username, password });
+    const result = await signIn("credentials", {
+      redirect: false,
+      username,
+      password,
+    });
+    setLoading(false);
+
+    if (result.error) {
+      // If there is an error, set it to the error state
+      setError("Invalid username or password.");
+    } else {
+      // If successful, redirect to the homepage
+      router.push("/");
+    }
   };
   return (
     <>
@@ -44,14 +59,6 @@ const LoginPage = () => {
           justifyContent: "center",
         }}
       >
-        {/* <Image
-          // className={styles["logo"]}
-          src={"/logo-kitchen.png"}
-          width={"139px"}
-          height={"15px"}
-          alt="logo"
-          className="kitchen-logo"
-        /> */}
         <img
           src={"/logo 1.svg"}
           alt="Logo of the Company"
@@ -85,6 +92,11 @@ const LoginPage = () => {
           >
             LOG IN TO DASHBOARD
           </Typography>
+          {error && (
+            <Alert severity="error" sx={{ mb: 3 }}>
+              {error}
+            </Alert>
+          )}
           <form onSubmit={handleSubmit}>
             <CustomInput
               label="Username"

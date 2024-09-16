@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import * as Ably from "ably";
 import { AblyProvider } from "ably/react";
-import "../app/globals.css";
+import "../styles/globals.css";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { SessionProvider, getSession } from "next-auth/react";
-import Layout from "../app/layout";
+import Head from "next/head";
+import Layout from "@/components/layout/layout";
 
 function MyApp({ Component, pageProps: { session, ...pageProps } }) {
   const [session2, setSession] = useState(null);
@@ -47,6 +48,14 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }) {
   return (
     <AblyProvider client={ablyClient}>
       <SessionProvider session={session}>
+        <Head>
+          <title>KitchenLyft</title>
+          <meta
+            name="description"
+            content="KitchenLyft Project Management Dashboard"
+          />
+          <link rel="icon" href="/favicon.ico" />
+        </Head>
         <Layout>
           <Component {...pageProps} ably={ablyClient} />
         </Layout>

@@ -27,6 +27,7 @@ import Projects from "@/components/projects/Projects";
 import Orders from "@/components/orders/Orders";
 import Messages from "@/components/messages/Messages";
 import UserTable from "@/components/users/UserTable";
+import Catalogue from "@/components/Catalogue";
 import { getServerSession } from "next-auth/next";
 import { signOut } from "next-auth/react";
 import { authOptions } from "./api/auth/[...nextauth]";
@@ -40,6 +41,7 @@ import TextsmsIcon from "@mui/icons-material/Textsms";
 import PersonIcon from "@mui/icons-material/Person";
 import LogoutIcon from "@mui/icons-material/Logout";
 import GroupIcon from "@mui/icons-material/Group";
+import PhotoFilterIcon from "@mui/icons-material/PhotoFilter";
 import Loader from "@/utils/Loader";
 import EastIcon from "@mui/icons-material/East";
 import KeyboardBackspaceIcon from "@mui/icons-material/KeyboardBackspace";
@@ -261,9 +263,15 @@ const Dashboard = ({ session2, ably }) => {
         </Box>
         <p>Messages</p>
       </MenuItem>
+      <MenuItem onClick={() => handleChange(null, 4)}>
+        <IconButton color="inherit">
+          <InventoryIcon />
+        </IconButton>
+        <p>Catalogue</p>
+      </MenuItem>
       {(session2.user.role === "CorporateAdmin" ||
         session2.user.role === "FranchiseAdmin") && (
-        <MenuItem onClick={() => handleChange(null, 4)}>
+        <MenuItem onClick={() => handleChange(null, 5)}>
           <IconButton color="inherit">
             <GroupIcon />
           </IconButton>
@@ -297,7 +305,7 @@ const Dashboard = ({ session2, ably }) => {
 
   const handleProfile = () => {
     selectedProject !== null && setSelectedProject(null);
-    setValue(5);
+    setValue(6);
     setAnchorEl(null);
   };
 
@@ -470,24 +478,24 @@ const Dashboard = ({ session2, ably }) => {
     dots: true,
     infinite: false,
     speed: 500,
-    slidesToShow: 4,
-    slidesToScroll: 4,
+    slidesToShow: Math.min(4, projects.length),
+    slidesToScroll: Math.min(4, projects.length),
     nextArrow: <EastIcon />,
     prevArrow: <KeyboardBackspaceIcon />,
     responsive: [
       {
         breakpoint: 1250,
         settings: {
-          slidesToShow: 3,
-          slidesToScroll: 3,
-          infinite: true,
+          slidesToShow: Math.min(3, projects.length),
+          slidesToScroll: Math.min(3, projects.length),
+          // infinite: true,
         },
       },
       {
         breakpoint: 1024,
         settings: {
-          slidesToShow: 2,
-          slidesToScroll: 2,
+          slidesToShow: Math.min(2, projects.length),
+          slidesToScroll: Math.min(2, projects.length),
           initialSlide: 2,
         },
       },
@@ -501,7 +509,7 @@ const Dashboard = ({ session2, ably }) => {
       {
         breakpoint: 700,
         settings: {
-          slidesToShow: 3,
+          slidesToShow: Math.min(3, projects.length),
           slidesToScroll: 1,
           initialSlide: 3,
         },
@@ -509,8 +517,8 @@ const Dashboard = ({ session2, ably }) => {
       {
         breakpoint: 550,
         settings: {
-          slidesToShow: 2,
-          slidesToScroll: 2,
+          slidesToShow: Math.min(2, projects.length),
+          slidesToScroll: Math.min(2, projects.length),
           initialSlide: 2,
         },
       },
@@ -657,7 +665,7 @@ const Dashboard = ({ session2, ably }) => {
         <Toolbar
           sx={{
             justifyContent: "space-between",
-            gap: { xs: "8px", sm: "16px", md: "12px", lg: "32px" },
+            gap: { xs: "8px", sm: "16px", md: "12px", lg2: "32px" },
             px: { xs: "16px", sm3: "24px" },
             flexWrap: "nowrap",
           }}
@@ -667,7 +675,7 @@ const Dashboard = ({ session2, ably }) => {
             color="inherit"
             aria-label="open drawer"
             sx={{
-              display: { xs: "flex", md2: "none" },
+              display: { xs: "flex", lg: "none" },
               backgroundColor: "#3237401A",
               "&:hover": {
                 backgroundColor: "rgba(50, 55, 64, 0.2)",
@@ -686,8 +694,8 @@ const Dashboard = ({ session2, ably }) => {
             sx={{
               display: "flex",
               alignItems: "center",
-              gap: { xs: "8px", sm: "16px", md3: "24px", lg: "32px" },
-              flex: { xs: "unset", md2: "1 0 auto" },
+              gap: { xs: "8px", sm: "16px", md3: "24px", lg2: "32px" },
+              flex: { xs: "unset", lg: "1 0 auto" },
             }}
           >
             <img
@@ -713,7 +721,7 @@ const Dashboard = ({ session2, ably }) => {
               sx={{
                 flexGrow: 1, // Allow the tabs to take up available space
                 "& .MuiTabs-scroller": {
-                  maxWidth: "550px",
+                  maxWidth: "680px",
                   flexGrow: 1,
                   flexShrink: 1,
                 },
@@ -747,9 +755,9 @@ const Dashboard = ({ session2, ably }) => {
                   display: "flex",
                   // justifyContent: "space-between", // Ensure tabs spread evenly
                   flexWrap: "nowrap",
-                  gap: { xs: "4px", sm: "12px", md: "24px", lg: "32px" },
+                  gap: { xs: "4px", sm: "12px", md: "24px", lg2: "32px" },
                 },
-                display: { xs: "none", md2: "flex" },
+                display: { xs: "none", lg: "flex" },
               }}
             >
               <Tab
@@ -813,7 +821,14 @@ const Dashboard = ({ session2, ably }) => {
                 }
                 label="Messages"
               />
-
+              <Tab
+                icon={
+                  <PhotoFilterIcon
+                    sx={{ color: "#323740", margin: "0 !important" }}
+                  />
+                }
+                label="Catalogue"
+              />
               {(session2.user.role === "CorporateAdmin" ||
                 session2.user.role === "FranchiseAdmin") && (
                 <Tab
@@ -1022,15 +1037,34 @@ const Dashboard = ({ session2, ably }) => {
                     </Box>
 
                     {projects.length > 0 ? (
-                      <Carousel {...settings}>
-                        {projects.map((project, index) => (
-                          <ProjectCard
-                            key={index}
-                            project={project}
-                            onClick={() => handleProjectClick(project._id)}
-                          />
-                        ))}
-                      </Carousel>
+                      projects.length > 4 ? (
+                        <Carousel {...settings}>
+                          {projects.map((project, index) => (
+                            <ProjectCard
+                              key={index}
+                              project={project}
+                              onClick={() => handleProjectClick(project._id)}
+                            />
+                          ))}
+                        </Carousel>
+                      ) : (
+                        // If there are 4 or fewer projects, just display them without the carousel
+                        <Box
+                          sx={{
+                            display: "flex",
+                            gap: { xs: "0", md2: 2 },
+                            flexWrap: "wrap",
+                          }}
+                        >
+                          {projects.map((project, index) => (
+                            <ProjectCard
+                              key={index}
+                              project={project}
+                              onClick={() => handleProjectClick(project._id)}
+                            />
+                          ))}
+                        </Box>
+                      )
                     ) : (
                       <Typography variant="h6">No projects</Typography>
                     )}
@@ -1106,15 +1140,28 @@ const Dashboard = ({ session2, ably }) => {
                   handleSend={handleSend}
                 />
               )}
-
               {value === 4 && (
+                <Box sx={{ mt: "16px" }}>
+                  <Box
+                    sx={{
+                      mb: 2,
+                    }}
+                  >
+                    <Typography variant="h2">Catalogue</Typography>
+                  </Box>
+                  <Catalogue />
+                </Box>
+              )}
+              {value === 5 && (
                 <UserTable
                   users={users}
                   handleRemoveUser={handleRemoveUser}
                   handleAddUser={handleAddUser}
+                  session2={session2}
                 />
               )}
-              {value === 5 && <Profile />}
+
+              {value === 6 && <Profile />}
             </>
           )}
         </Box>

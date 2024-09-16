@@ -29,7 +29,7 @@ import {
 import GroupRemoveIcon from "@mui/icons-material/GroupRemove";
 import CustomInput from "../helpers/CustomInput";
 
-const UserTable = ({ users, handleRemoveUser, handleAddUser }) => {
+const UserTable = ({ users, handleRemoveUser, handleAddUser, session2 }) => {
   const [open, setOpen] = useState(false);
   const [openConfirmDelete, setOpenConfirmDelete] = useState(false);
   const [userToDelete, setUserToDelete] = useState(null);
@@ -70,6 +70,19 @@ const UserTable = ({ users, handleRemoveUser, handleAddUser }) => {
   };
 
   const handleSubmit = async () => {
+    // Basic email regex for validation
+    const emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+
+    // Check if the email is in the correct format
+    if (!emailPattern.test(newUser.email)) {
+      setSnackbar({
+        open: true,
+        message: "Invalid email format!",
+        severity: "error",
+      });
+      return;
+    }
+
     // Check if the email already exists
     const response = await fetch("/api/check-email", {
       method: "POST",
@@ -243,9 +256,13 @@ const UserTable = ({ users, handleRemoveUser, handleAddUser }) => {
               <MenuItem disabled value="">
                 Select Role
               </MenuItem>
-              <MenuItem value="CorporateAdmin">Corporate Admin</MenuItem>
-              <MenuItem value="CorporateUser">Corporate User</MenuItem>
-              <MenuItem value="FranchiseAdmin">Franchise Admin</MenuItem>
+              {session2.user.role == "CorporateAdmin" && (
+                <>
+                  <MenuItem value="CorporateAdmin">Corporate Admin</MenuItem>
+                  <MenuItem value="CorporateUser">Corporate User</MenuItem>
+                  <MenuItem value="FranchiseAdmin">Franchise Admin</MenuItem>
+                </>
+              )}
               <MenuItem value="FranchiseUser">Franchise User</MenuItem>
             </Select>
           </FormControl>

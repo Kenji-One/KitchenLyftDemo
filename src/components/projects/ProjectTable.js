@@ -77,6 +77,18 @@ const ProjectTable = ({
                   }}
                 />
                 {project.title}
+                <span
+                  style={{
+                    width: "6px",
+                    minWidth: "6px",
+                    height: "6px",
+                    borderRadius: "50%",
+                    backgroundColor: "#323740",
+                    marginBottom: "1px",
+                    margin: "0 6px",
+                  }}
+                ></span>
+                {project?.customerName}
               </TableCell>
               <TableCell>
                 <ProjectStatusChip status={project.status} />

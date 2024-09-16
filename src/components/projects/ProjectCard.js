@@ -50,7 +50,7 @@ const ProjectCard = ({ project, onClick, key }) => {
           }}
         >
           <Typography variant="h6" component="div" sx={{ fontWeight: 800 }}>
-            {project.title}
+            {project.title + " " + project?.customerName}
           </Typography>
           <ProjectStatusChip status={project.status} />
         </Box>

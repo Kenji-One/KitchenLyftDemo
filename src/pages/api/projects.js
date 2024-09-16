@@ -3,6 +3,7 @@ import Project from "@/models/Project";
 import Quote from "@/models/Quote";
 import Chat from "@/models/Chat";
 import Order from "@/models/Order";
+import User from "@/models/User";
 import stripe from "@/utils/ourStripe";
 import multer from "multer";
 import cloudinary from "@/utils/cloudinary";
@@ -48,14 +49,35 @@ const handler = async (req, res) => {
           return res.status(200).json({ project, quote, chat });
         }
 
-        const query = session.user.role.startsWith("Corporate")
-          ? {}
-          : { user_id: session.user.id };
-        const projects = await Project.find(query).populate(
-          "user_id",
-          "username"
-        );
-        // console.log("projectssss:", projects);
+        let query = {};
+
+        // Adjust query based on user role
+        if (session.user.role.startsWith("Corporate")) {
+          // CorporateAdmin can access all projects
+          query = {};
+        } else if (session.user.role === "FranchiseAdmin") {
+          // FranchiseAdmin should see projects created by themselves and their FranchiseUsers
+          const franchiseUsers = await User.find({
+            createdBy: session.user.id,
+          }).select("_id");
+          const franchiseUserIds = franchiseUsers.map((user) => user._id);
+          query = { user_id: { $in: [session.user.id, ...franchiseUserIds] } };
+        } else if (session.user.role === "FranchiseUser") {
+          const currentUser = await User.findById(session.user.id).select(
+            "createdBy"
+          );
+          const createdByAdmin = currentUser.createdBy;
+          query = { user_id: { $in: [session.user.id, createdByAdmin] } };
+        } else {
+          // Default to only showing the user's own projects for other roles
+          query = { user_id: session.user.id };
+        }
+
+        const projects = await Project.find(query)
+          .populate("user_id", "username")
+          .sort({ createdAt: -1 })
+          .exec();
+
         res.status(200).json(projects);
       } catch (error) {
         res.status(500).json({ message: "Error fetching projects", error });
@@ -111,6 +133,9 @@ const handler = async (req, res) => {
             startDate: req.body.startDate,
             // status: req.body.status,
             user_id: session.user.id,
+            customerName: req.body.customerName,
+            customerPhoneNumber: req.body.customerPhoneNumber,
+            customerAddress: req.body.customerAddress,
           });
 
           const savedProject = await newProject.save();
@@ -148,6 +173,9 @@ const handler = async (req, res) => {
           status,
           removedImages,
           existingImages,
+          customerName,
+          customerPhoneNumber,
+          customerAddress,
         } = req.body;
 
         const removedImagesArray = JSON.parse(removedImages || "[]");
@@ -216,6 +244,10 @@ const handler = async (req, res) => {
           project.priority = priority ?? project.priority;
           project.status = status ?? project.status;
           project.startDate = startDate ?? project.startDate;
+          project.customerName = customerName ?? project.customerName;
+          project.customerPhoneNumber =
+            customerPhoneNumber ?? project.customerPhoneNumber;
+          project.customerAddress = customerAddress ?? project.customerAddress;
 
           const updatedProject = await project.save();
           // If the status is changed to "Shipped," capture the second payment
@@ -224,6 +256,7 @@ const handler = async (req, res) => {
             "username email"
           );
           let paymentMessage = "";
+          console.log(order);
           if (
             status === "Shipped" &&
             order.secondPayment.status !== "Completed"

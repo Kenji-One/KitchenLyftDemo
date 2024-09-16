@@ -122,149 +122,199 @@ const melamineMaterialColors = [
     catalog: "WMK-057-B",
     color: "Natural Grey-KL1",
     material: "Melamine",
+    image: "/colors/Natural Grey-KL1.jpg",
   },
   {
     sku: "KL 2",
     catalog: "WMK-080",
     color: "Sunset Grey-KL2",
     material: "Melamine",
+    image: "/colors/Sunset Grey-KL2.jpeg",
   },
-  { sku: "KL 3", catalog: "WMK-081", color: "Black-KL3", material: "Melamine" },
+  {
+    sku: "KL 3",
+    catalog: "WMK-081",
+    color: "Black-KL3",
+    material: "Melamine",
+    image: "/colors/Black-KL3.jpg",
+  },
   {
     sku: "KL 4",
     catalog: "WMK-082-G",
     color: "White-KL4",
     material: "Melamine",
+    image: "/colors/White-KL4.png",
   },
   {
     sku: "KL 5",
     catalog: "WMK-088-B",
     color: "Dark Grey-KL5",
     material: "Melamine",
+    image: "/colors/Dark Grey-KL5.jpg",
   },
-  { sku: "KL 6", catalog: "WMK-089", color: "Grey-KL6", material: "Melamine" },
+  {
+    sku: "KL 6",
+    catalog: "WMK-089",
+    color: "Grey-KL6",
+    material: "Melamine",
+    image: "/colors/Grey-KL6.jpg",
+  },
   {
     sku: "KL 7",
     catalog: "WMK-095",
     color: "Glossy White-KL7",
     material: "Melamine",
+    image: "/colors/Glossy White-KL7.png",
   },
   {
     sku: "KL 8",
     catalog: "WMK-006-B",
     color: "Nogal Wood-KL8",
     material: "Melamine",
+    image: "/colors/Nogal Wood-KL8.jpg",
   },
   {
     sku: "KL 9",
     catalog: "WMK-009-C",
     color: "Fresno Wood-KL9",
     material: "Melamine",
+    image: "/colors/Fresno Wood-KL9.jpg",
   },
   {
     sku: "KL 10",
     catalog: "WMK-019",
     color: "Glacial Wood-KL10",
     material: "Melamine",
+    image: "/colors/Glacial Wood-KL10.jpg",
   },
   {
     sku: "KL 11",
     catalog: "WMK-020-B",
     color: "Dark Wood-KL11",
     material: "Melamine",
+    image: "/colors/Dark Wood-KL11.jpeg",
   },
   {
     sku: "KL 12",
     catalog: "WMK-021",
     color: "Dark Oak Wood-KL12",
     material: "Melamine",
+    image: "/colors/Dark Oak Wood-KL12.jpg",
   },
   {
     sku: "KL 13",
     catalog: "WMK-022",
     color: "Beige Wood-KL13",
     material: "Melamine",
+    image: "/colors/Beige Wood-KL13.jpg",
   },
   {
     sku: "KL 14",
     catalog: "WMK-041-B",
     color: "White Wood-KL14",
     material: "Melamine",
+    image: "/colors/White Wood-KL14.png",
   },
   {
     sku: "KL 15",
     catalog: "WMK-042",
     color: "Grey Wood-KL15",
     material: "Melamine",
+    image: "/colors/Grey Wood-KL15.png",
   },
   {
     sku: "KL 16",
     catalog: "WMK-043-B",
     color: "Black Wood-KL16",
     material: "Melamine",
+    image: "/colors/Black Wood-KL16.png",
   },
   {
     sku: "KL 17",
     catalog: "WMK-015-B",
     color: "Dark Grey Wood-KL17",
     material: "Melamine",
+    image: "/colors/Dark Grey Wood-KL17.jpg",
   },
 ];
 
 const petMaterialColors = [
-  { sku: "KL 18", catalog: "WMK-082-G", color: "White-KL18", material: "PET" },
-  { sku: "KL 19", catalog: "WMK-089", color: "Grey-KL19", material: "PET" },
+  {
+    sku: "KL 18",
+    catalog: "WMK-082-G",
+    color: "White-KL18",
+    material: "PET",
+    image: "/colors/White-KL18.png",
+  },
+  {
+    sku: "KL 19",
+    catalog: "WMK-089",
+    color: "Grey-KL19",
+    material: "PET",
+    image: "/colors/Grey-KL19.jpg",
+  },
   {
     sku: "KL 20",
     catalog: "WMK-080",
     color: "Sunset Grey-KL20",
     material: "PET",
+    image: "/colors/Sunset Grey-KL20.jpg",
   },
   {
     sku: "KL 21",
     catalog: "WMK-088-B",
     color: "Dark Grey-KL21",
     material: "PET",
+    image: "/colors/Dark Grey-KL21.png",
   },
   {
     sku: "KL 22",
     catalog: "WMK-020-B",
     color: "Dark Wood-KL22",
     material: "PET",
+    image: "/colors/Dark Wood-KL22.png",
   },
-  { sku: "KL 23", catalog: "WMK-081", color: "Black-KL23", material: "PET" },
+  {
+    sku: "KL 23",
+    catalog: "WMK-081",
+    color: "Black-KL23",
+    material: "PET",
+    image: "/colors/Black-KL23.png",
+  },
   {
     sku: "KL 24",
     catalog: "WMK-095",
     color: "Glossy White-KL24",
     material: "PET",
+    image: "/colors/Glossy White-KL24.png",
   },
   {
     sku: "KL 25",
     catalog: "WMK-057-B",
     color: "Natural Grey-KL25",
     material: "PET",
+    image: "/colors/Natural Grey-KL25.jpg",
   },
 ];
 
 const finishingTouchSKUs = [
-  { sku: "FTKL 1", catalog: "WMK-057-B" },
-  { sku: "FTKL 2", catalog: "WMK-080" },
-  { sku: "FTKL 3", catalog: "WMK-081" },
-  { sku: "FTKL 4", catalog: "WMK-082-G" },
-  { sku: "FTKL 5", catalog: "WMK-088-B" },
-  { sku: "FTKL 6", catalog: "WMK-089" },
-  { sku: "FTKL 7", catalog: "WMK-095" },
-  { sku: "FTKL 8", catalog: "WMK-006-B" },
-  { sku: "FTKL 9", catalog: "WMK-009-C" },
-  { sku: "FTKL 10", catalog: "WMK-019" },
-  { sku: "FTKL 11", catalog: "WMK-020-B" },
-  { sku: "FTKL 12", catalog: "WMK-021" },
-  { sku: "FTKL 13", catalog: "WMK-022" },
-  { sku: "FTKL 14", catalog: "WMK-041-B" },
-  { sku: "FTKL 15", catalog: "WMK-042" },
-  { sku: "FTKL 16", catalog: "WMK-043-B" },
-  { sku: "FTKL 17", catalog: "WMK-015-B" },
+  { sku: "FTKL 1 (KL 1 and KL 25)", catalog: "WMK-057-B" },
+  { sku: "FTKL 2 (KL 2 and KL 20)", catalog: "WMK-080" },
+  { sku: "FTKL 3 (KL 3 and KL 23)", catalog: "WMK-081" },
+  { sku: "FTKL 4 (KL 4 and KL 18)", catalog: "WMK-082-G" },
+  { sku: "FTKL 5 (KL 5 and KL 21)", catalog: "WMK-088-B" },
+  { sku: "FTKL 6 (KL 6 and KL 19)", catalog: "WMK-089" },
+  { sku: "FTKL 7 (KL 7 and KL 24)", catalog: "WMK-095" },
+  { sku: "FTKL 8 (KL 8)", catalog: "WMK-006-B" },
+  { sku: "FTKL 9 (KL 9)", catalog: "WMK-009-C" },
+  { sku: "FTKL 10 (KL 10)", catalog: "WMK-019" },
+  { sku: "FTKL 11 (KL 11 and KL 22)", catalog: "WMK-020-B" },
+  { sku: "FTKL 12 (KL 12)", catalog: "WMK-021" },
+  { sku: "FTKL 13 (KL 13)", catalog: "WMK-022" },
+  { sku: "FTKL 14 (KL 14)", catalog: "WMK-041-B" },
+  { sku: "FTKL 15 (KL 15)", catalog: "WMK-042" },
+  { sku: "FTKL 16 (KL 16)", catalog: "WMK-043-B" },
+  { sku: "FTKL 17 (KL 17)", catalog: "WMK-015-B" },
 ];
 
 const hingesSKUs = [
@@ -569,7 +619,27 @@ const GenerateQuoteForm = ({
     setQuoteDetails((prevDetails) => {
       const updatedCategory = [...prevDetails[category]];
       updatedCategory.splice(index, 1);
-      return { ...prevDetails, [category]: updatedCategory };
+
+      // Create a new quoteDetails object with the updated category
+      let updatedQuoteDetails = { ...prevDetails, [category]: updatedCategory };
+
+      // Special handling for dependent fields or calculations
+      if (category === "doors") {
+        // Recalculate the total doors quantity after removal
+        const totalDoorsQuantity = updatedQuoteDetails.doors.reduce(
+          (total, door) => total + (parseInt(door.quantity) || 0),
+          0
+        );
+
+        // Update hinges quantity based on the new total
+        updatedQuoteDetails.hinges[0] = {
+          ...updatedQuoteDetails.hinges[0],
+          quantity: totalDoorsQuantity * 2,
+        };
+      }
+
+      // Return the updated quoteDetails object
+      return updatedQuoteDetails;
     });
   };
 
@@ -682,12 +752,6 @@ const GenerateQuoteForm = ({
           {[...categoriesWithFormulas, ...categoriesWithStandardPrices].map(
             (category) => (
               <Box key={category}>
-                <Typography
-                  variant="h6"
-                  sx={{ mb: "14px", textTransform: "capitalize" }}
-                >
-                  {category.replace(/([A-Z])/g, " $1")}
-                </Typography>
                 {quoteDetails[category].map((item, index) => (
                   <Box
                     key={index}
@@ -699,6 +763,28 @@ const GenerateQuoteForm = ({
                       gap: "12px",
                     }}
                   >
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        gap: "12px",
+                        gridColumn: "1/-1",
+                      }}
+                    >
+                      <Typography
+                        variant="h6"
+                        sx={{ textTransform: "capitalize" }}
+                      >
+                        {category.replace(/([A-Z])/g, " $1")}
+                      </Typography>
+                      <IconButton
+                        color="error"
+                        onClick={() => handleRemoveItem(category, index)}
+                      >
+                        <CloseIcon />
+                      </IconButton>
+                    </Box>
                     <Typography
                       variant="h6"
                       sx={{
@@ -832,7 +918,25 @@ const GenerateQuoteForm = ({
                                   key={material.catalog}
                                   value={material.color}
                                 >
-                                  {material.color}
+                                  <Box
+                                    sx={{
+                                      width: "100%",
+                                      display: "flex",
+                                      alignItems: "center",
+                                      justifyContent: "space-between",
+                                    }}
+                                  >
+                                    {material.color}
+                                    <img
+                                      src={material.image}
+                                      alt={material.color}
+                                      style={{
+                                        width: 24,
+                                        height: 24,
+                                        marginRight: 8,
+                                      }}
+                                    />
+                                  </Box>
                                 </MenuItem>
                               ))}
                             </Select>
@@ -925,7 +1029,7 @@ const GenerateQuoteForm = ({
                     <Box
                       sx={{
                         gridRow:
-                          categoriesWithFormulas.includes(category) && "4",
+                          categoriesWithFormulas.includes(category) && "5",
                       }}
                     >
                       <CustomInput
@@ -939,18 +1043,6 @@ const GenerateQuoteForm = ({
                         error={errors[`${category}-${index}-quantity`]}
                       />
                     </Box>
-                    {/* <IconButton
-                  color="error"
-                  onClick={() => handleRemoveItem(category, index)}
-                  sx={{
-                    position: "absolute",
-                    top: "50%",
-                    right: -40,
-                    transform: "translateY(-50%)",
-                  }}
-                >
-                  <CloseIcon />
-                </IconButton> */}
                   </Box>
                 ))}
                 <Box sx={{ width: "100%", display: "flex" }}>

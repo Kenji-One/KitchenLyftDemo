@@ -27,7 +27,13 @@ export default async function handler(req, res) {
       const text = `Kitchen Lyft account was created for you, your role: ${role} - you can login there with this credetialsm - username: ${username}, password: ${password}.`;
 
       const passwordHash = bcrypt.hashSync(password, 10);
-      const newUser = new User({ username, passwordHash, email, role });
+      const newUser = new User({
+        username,
+        passwordHash,
+        email,
+        role,
+        createdBy: session.user.id,
+      });
       try {
         await newUser.save();
         sendPaymentEmail(email, subject, text);
@@ -51,7 +57,12 @@ export default async function handler(req, res) {
       const query =
         session.user.role === "CorporateAdmin"
           ? {}
-          : { createdBy: session.user._id };
+          : {
+              $or: [
+                { createdBy: session.user.id }, // Projects created by the user
+                { _id: session.user.id }, // Projects where the user is associated
+              ],
+            };
       const users = await User.find(query).populate("createdBy", "username");
       res.status(200).json(users);
       break;

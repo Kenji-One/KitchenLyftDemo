@@ -18,13 +18,18 @@ import CustomInput from "@/components/helpers/CustomInput";
 import Loader from "@/utils/Loader";
 import CloseIcon from "@mui/icons-material/Close";
 import AddIcon from "@mui/icons-material/Add";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/pages/api/auth/[...nextauth]";
 
-const CreateProject = () => {
+const CreateProject = ({ session2 }) => {
   const [images, setImages] = useState([]);
   const [description, setDescription] = useState("");
   const [location, setLocation] = useState("");
   const [priority, setPriority] = useState("");
   const [startDate, setStartDate] = useState(null);
+  const [customerName, setCustomerName] = useState("");
+  const [customerPhoneNumber, setCustomerPhoneNumber] = useState("");
+  const [customerAddress, setCustomerAddress] = useState("");
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
 
@@ -36,6 +41,11 @@ const CreateProject = () => {
     if (!location) newErrors.location = "Location is required";
     if (!priority) newErrors.priority = "Priority is required";
     if (!startDate) newErrors.startDate = "StartDate is required";
+    if (!customerName) newErrors.customerName = "Customer Name is required";
+    if (!customerPhoneNumber)
+      newErrors.customerPhoneNumber = "Customer Phone is required";
+    if (!customerAddress)
+      newErrors.customerAddress = "Customer Address is required";
     return newErrors;
   };
 
@@ -64,8 +74,10 @@ const CreateProject = () => {
     formData.append("description", description);
     formData.append("location", location);
     formData.append("priority", priority);
-    // formData.append("status", status);
     formData.append("startDate", startDate.toISOString());
+    formData.append("customerName", customerName);
+    formData.append("customerPhoneNumber", customerPhoneNumber);
+    formData.append("customerAddress", customerAddress);
 
     const response = await fetch("/api/projects", {
       method: "POST",
@@ -84,6 +96,7 @@ const CreateProject = () => {
   const handleGoBack = () => {
     router.push("/");
   };
+
   return (
     <>
       <Loader open={loading} />
@@ -233,6 +246,36 @@ const CreateProject = () => {
             </Box>
           </Box>
           <Box>
+            <CustomInput
+              label="Customer Name"
+              type="text"
+              value={customerName}
+              handleChange={(e) => setCustomerName(e.target.value)}
+              placeholder="Enter customer name"
+              inputBoxSX={{ mb: "24px" }}
+              error={errors.customerName}
+              helperText={errors.customerName}
+            />
+            <CustomInput
+              label="Customer Phone Number"
+              type="text"
+              value={customerPhoneNumber}
+              handleChange={(e) => setCustomerPhoneNumber(e.target.value)}
+              placeholder="Enter customer phone number"
+              inputBoxSX={{ mb: "24px" }}
+              error={errors.customerPhoneNumber}
+              helperText={errors.customerPhoneNumber}
+            />
+            <CustomInput
+              label="Customer Address"
+              type="text"
+              value={customerAddress}
+              handleChange={(e) => setCustomerAddress(e.target.value)}
+              placeholder="Enter customer address"
+              inputBoxSX={{ mb: "24px" }}
+              error={errors.customerAddress}
+              helperText={errors.customerAddress}
+            />
             <FormControl fullWidth sx={{ mb: "24px" }}>
               {/* <InputLabel>Location</InputLabel> */}
               <Typography variant="inputHeading">Location</Typography>
@@ -338,6 +381,26 @@ const CreateProject = () => {
       </Box>
     </>
   );
+};
+export const getServerSideProps = async (context) => {
+  const session2 = await getServerSession(
+    context.req,
+    context.res,
+    authOptions
+  );
+
+  if (!session2 || !session2.user.role) {
+    return {
+      redirect: {
+        destination: "/login",
+        permanent: false,
+      },
+    };
+  }
+
+  return {
+    props: { session2 },
+  };
 };
 
 export default CreateProject;

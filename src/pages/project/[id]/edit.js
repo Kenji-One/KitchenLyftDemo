@@ -32,12 +32,14 @@ const EditProject = ({ session2 }) => {
   const [priority, setPriority] = useState("");
   const [status, setStatus] = useState("");
   const [startDate, setStartDate] = useState(null);
+  const [customerName, setCustomerName] = useState("");
+  const [customerPhoneNumber, setCustomerPhoneNumber] = useState("");
+  const [customerAddress, setCustomerAddress] = useState("");
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
   const [removedImages, setRemovedImages] = useState([]);
   const [successMessage, setSuccessMessage] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-
   useEffect(() => {
     if (!id) return;
     setLoading(true);
@@ -50,11 +52,14 @@ const EditProject = ({ session2 }) => {
         setLocation(project.location);
         setPriority(project.priority);
         setStatus(project.status);
+        setCustomerName(project.customerName || "");
+        setCustomerPhoneNumber(project.customerPhoneNumber || "");
+        setCustomerAddress(project.customerAddress || "");
+
         // Safely parse the startDate date
         const projectstartDate = project.startDate
           ? new Date(project.startDate)
           : null;
-        // Check if the date is valid before setting
         if (!isNaN(projectstartDate)) {
           setStartDate(projectstartDate);
         }
@@ -86,6 +91,11 @@ const EditProject = ({ session2 }) => {
     if (!location) newErrors.location = "Location is required";
     if (!priority) newErrors.priority = "Priority is required";
     if (!startDate) newErrors.startDate = "Start Date is required";
+    if (!customerName) newErrors.customerName = "Customer Name is required";
+    if (!customerPhoneNumber)
+      newErrors.customerPhoneNumber = "Customer Phone is required";
+    if (!customerAddress)
+      newErrors.customerAddress = "Customer Address is required";
     return newErrors;
   };
 
@@ -116,17 +126,21 @@ const EditProject = ({ session2 }) => {
     formData.append("startDate", startDate.toISOString());
     formData.append("existingImages", JSON.stringify(existingImages));
     formData.append("removedImages", JSON.stringify(removedImages));
+    formData.append("customerName", customerName);
+    formData.append("customerPhoneNumber", customerPhoneNumber);
+    formData.append("customerAddress", customerAddress);
 
     const response = await fetch(`/api/projects`, {
       method: "PUT",
       body: formData,
     });
-
+    const data = await response.json();
     if (response.ok) {
       setLoading(false);
       setSuccessMessage(data.message);
       setTimeout(() => {
-        router.push(`/project/${id}/edit`);
+        router.reload();
+        // setSuccessMessage("");
       }, 3000);
     } else {
       console.error("Failed to update project");
@@ -142,7 +156,7 @@ const EditProject = ({ session2 }) => {
     <>
       <Loader open={loading} />
       {successMessage && (
-        <Alert severity="success" sx={{ mb: 4 }}>
+        <Alert severity="success" sx={{ mb: 4, mt: 12 }}>
           {successMessage}
         </Alert>
       )}
@@ -297,6 +311,36 @@ const EditProject = ({ session2 }) => {
             </Box>
           </Box>
           <Box>
+            <CustomInput
+              label="Customer Name"
+              type="text"
+              value={customerName}
+              handleChange={(e) => setCustomerName(e.target.value)}
+              placeholder="Enter customer name"
+              inputBoxSX={{ mb: "24px" }}
+              error={errors.customerName}
+              helperText={errors.customerName}
+            />
+            <CustomInput
+              label="Customer Phone Number"
+              type="text"
+              value={customerPhoneNumber}
+              handleChange={(e) => setCustomerPhoneNumber(e.target.value)}
+              placeholder="Enter customer phone number"
+              inputBoxSX={{ mb: "24px" }}
+              error={errors.customerPhoneNumber}
+              helperText={errors.customerPhoneNumber}
+            />
+            <CustomInput
+              label="Customer Address"
+              type="text"
+              value={customerAddress}
+              handleChange={(e) => setCustomerAddress(e.target.value)}
+              placeholder="Enter customer address"
+              inputBoxSX={{ mb: "24px" }}
+              error={errors.customerAddress}
+              helperText={errors.customerAddress}
+            />
             {session2.user.role === "CorporateAdmin" && (
               <FormControl fullWidth sx={{ mb: "24px" }}>
                 {/* <InputLabel>Location</InputLabel> */}
@@ -318,9 +362,12 @@ const EditProject = ({ session2 }) => {
                   <MenuItem value="Awaiting Payment">Awaiting Payment</MenuItem>
                   <MenuItem value="Paid">Paid</MenuItem>
                   <MenuItem value="In Production">In Production</MenuItem>
-                  {editableProject.status === "Paid" && (
-                    <MenuItem value="Shipped">Shipped</MenuItem>
-                  )}
+                  <MenuItem
+                    value="Shipped"
+                    disabled={editableProject.status !== "Paid"}
+                  >
+                    Shipped
+                  </MenuItem>
                   <MenuItem value="Order Received">Order Received</MenuItem>
                   <MenuItem value="Completed">Completed</MenuItem>
                 </Select>

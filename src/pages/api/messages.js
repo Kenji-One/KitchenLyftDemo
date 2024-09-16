@@ -1,5 +1,6 @@
 import connectDB from "@/utils/db";
 import Chat from "@/models/Chat";
+import User from "@/models/User";
 import Project from "@/models/Project";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "./auth/[...nextauth]";
@@ -37,20 +38,39 @@ const handler = async (req, res) => {
           }
           return res.status(200).json(chat);
         } else {
-          // Adjust the query to correctly find chats associated with the user
-          const query = session.user.role.startsWith("Corporate")
-            ? {}
-            : {
-                projectId: {
-                  $in: await Project.find({ user_id: session.user.id }).select(
-                    "_id"
-                  ),
-                },
-              };
+          let projectQuery = {};
 
-          // console.log("Query used:", query);
+          // Adjust projectQuery based on user role
+          if (session.user.role.startsWith("Corporate")) {
+            // CorporateAdmin can access all projects
+            projectQuery = {};
+          } else if (session.user.role === "FranchiseAdmin") {
+            // FranchiseAdmin should see projects created by themselves and their FranchiseUsers
+            const franchiseUsers = await User.find({
+              createdBy: session.user.id,
+            }).select("_id");
+            const franchiseUserIds = franchiseUsers.map((user) => user._id);
+            projectQuery = {
+              user_id: { $in: [session.user.id, ...franchiseUserIds] },
+            };
+          } else if (session.user.role === "FranchiseUser") {
+            const currentUser = await User.findById(session.user.id).select(
+              "createdBy"
+            );
+            const createdByAdmin = currentUser.createdBy;
+            projectQuery = {
+              user_id: { $in: [session.user.id, createdByAdmin] },
+            };
+          } else {
+            // Default to only showing the user's own projects for other roles
+            projectQuery = { user_id: session.user.id };
+          }
 
-          const chats = await Chat.find(query)
+          // Find projects based on projectQuery
+          const projects = await Project.find(projectQuery).select("_id");
+          const projectIds = projects.map((project) => project._id);
+
+          const chats = await Chat.find({ projectId: { $in: projectIds } })
             .populate({
               path: "projectId",
               populate: {
