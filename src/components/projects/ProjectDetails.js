@@ -15,7 +15,6 @@ import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import MessageInput from "../messages/MessageInput";
 import MessageList from "../messages/MessageList";
 import ProjectStatusChip from "./ProjectStatusChip";
-import { generateCSV } from "@/utils/csvGenerator";
 
 const ProjectDetails = ({
   project,
@@ -78,20 +77,33 @@ const ProjectDetails = ({
     }
   };
 
-  const handleDownloadCSV = () => {
-    const csv = generateCSV(project, quote);
+  const handleDownloadPDF = async () => {
+    try {
+      const response = await fetch("/api/generate-pdf", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ project, quote }), // Send project and quote data to the server
+      });
 
-    // Create a blob from the CSV and create a download link
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", `${project.title}_quote.csv`);
+      if (response.ok) {
+        const blob = await response.blob();
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", `${project.title}_quote.pdf`);
 
-    // Append to the document and trigger the download
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+        // Append to the document and trigger the download
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        console.error("Failed to generate PDF");
+      }
+    } catch (error) {
+      console.error("Error downloading PDF:", error);
+    }
   };
 
   return (
@@ -346,7 +358,7 @@ const ProjectDetails = ({
                             variant="body1"
                             sx={{ mb: 0.5 }}
                           >
-                            {item.quantity && `${item.quantity} pcs`}
+                            {item.quantity && `${item.quantity} pcs, `}
                             {item.material && `${item.material}, `}
                             {item.color && `${item.color}, `}
                             {item.sku.catalog &&
@@ -423,9 +435,9 @@ const ProjectDetails = ({
                     type="submit"
                     variant="greenBtn"
                     color="primary"
-                    onClick={handleDownloadCSV}
+                    onClick={handleDownloadPDF}
                   >
-                    Export as CSV
+                    Export as PDF
                   </Button>
                 </Box>
               </Box>

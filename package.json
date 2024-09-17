@@ -21,7 +21,6 @@
     "date-fns": "^3.6.0",
     "dotenv": "^16.4.5",
     "gridfs-stream": "^1.1.1",
-    "json2csv": "^6.0.0-alpha.2",
     "ldrs": "^1.0.2",
     "micro": "^10.0.1",
     "mongodb": "^6.8.0",
@@ -34,6 +33,7 @@
     "next-connect": "^1.0.0",
     "nodemailer": "^6.9.14",
     "pdfjs-dist": "^3.0.279",
+    "pdfkit": "^0.15.0",
     "react": "^18",
     "react-color": "^2.19.3",
     "react-datepicker": "^7.3.0",
@@ -42,8 +42,7 @@
     "slick-carousel": "^1.8.1",
     "socket.io": "^4.7.5",
     "socket.io-client": "^4.7.5",
-    "stripe": "^16.8.0",
-    "swiper": "^11.1.10"
+    "stripe": "^16.8.0"
   },
   "devDependencies": {
     "eslint": "^8",
