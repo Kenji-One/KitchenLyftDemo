@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Box,
@@ -15,6 +15,7 @@ import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import MessageInput from "../messages/MessageInput";
 import MessageList from "../messages/MessageList";
 import ProjectStatusChip from "./ProjectStatusChip";
+import CustomInput from "@/components/helpers/CustomInput";
 
 const ProjectDetails = ({
   project,
@@ -26,6 +27,7 @@ const ProjectDetails = ({
   setLoading,
 }) => {
   const router = useRouter();
+  const [markup, setMarkup] = useState(0);
 
   // Helper function to format date
   const formatDate = (dateString) => {
@@ -84,7 +86,7 @@ const ProjectDetails = ({
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ project, quote }), // Send project and quote data to the server
+        body: JSON.stringify({ project, quote, markup }), // Send project and quote data to the server
       });
 
       if (response.ok) {
@@ -431,14 +433,25 @@ const ProjectDetails = ({
                       ).toFixed(2)}
                     </Typography>
                   </Box>
-                  <Button
-                    type="submit"
-                    variant="greenBtn"
-                    color="primary"
-                    onClick={handleDownloadPDF}
-                  >
-                    Export as PDF
-                  </Button>
+                  <Box sx={{ display: "flex", gap: 2, alignItems: "end" }}>
+                    <CustomInput
+                      type="number"
+                      value={markup}
+                      handleChange={(e) => setMarkup(Number(e.target.value))}
+                      label={"Enter markup"}
+                      placeholder="Enter markup"
+                      inputName="markup"
+                      inputBoxSX={{ width: "unset" }}
+                    />
+                    <Button
+                      type="submit"
+                      variant="greenBtn"
+                      color="primary"
+                      onClick={handleDownloadPDF}
+                    >
+                      Export as PDF
+                    </Button>
+                  </Box>
                 </Box>
               </Box>
             ) : (

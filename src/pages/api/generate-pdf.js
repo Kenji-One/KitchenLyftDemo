@@ -1,11 +1,15 @@
 import PDFDocument from "pdfkit";
 import path from "path";
-
+import fs from "fs";
+import SVGtoPDF from "svg-to-pdfkit";
 export default async function handler(req, res) {
-  const { project, quote } = req.body;
+  const { project, quote, markup } = req.body;
 
   // Create a new PDF document
-  const doc = new PDFDocument();
+  const doc = new PDFDocument({ margin: 50 });
+  doc.registerFont("Heading Font", "public/fonts/PaytoneOne-Regular.ttf");
+  doc.registerFont("Headlines Font", "public/fonts/Lato-Bold.ttf");
+  doc.registerFont("Text Font", "public/fonts/Lato-Regular.ttf");
   let buffers = [];
   doc.on("data", buffers.push.bind(buffers));
   doc.on("end", () => {
@@ -20,32 +24,63 @@ export default async function handler(req, res) {
   });
 
   // Correctly resolve the path to the logo image
-  const logoPath = path.join(process.cwd(), "public", "logo 1.jpg");
+  const logoPath = path.join(process.cwd(), "public", "logo 1.svg");
+  const svgData = fs.readFileSync(logoPath, "utf8");
 
-  // Add the logo image to the top and center it
-  const logoWidth = 150;
-  const pageWidth = doc.page.width;
-  const centerX = (pageWidth - logoWidth) / 2; // Calculate center position
+  // Add the SVG logo to the PDF
+  const logoWidth = 150; // Desired width for the logo
+  const centerX = (doc.page.width - logoWidth) / 2; // Calculate center position
+  SVGtoPDF(doc, svgData, centerX, 40, { width: logoWidth });
 
-  doc.image(logoPath, centerX, 50, {
-    // Center the image
-    fit: [logoWidth, 50],
-  });
+  // doc.image(logoPath, centerX, 40, {
+  //   // Center the image
+  //   fit: [logoWidth, logoHeight],
+  //   align: "center",
+  //   valign: "top",
+  // });
 
-  // Add spacing after the logo
-  doc.moveDown(2); // Adjust the value for more space
-
-  doc.fontSize(12).text(`Client: ${project.customerName || "N/A"}`);
-  doc.text(`Address: ${project.customerAddress || "N/A"}`);
-  doc.text(`Contact Info: ${project.customerPhoneNumber || "N/A"}`);
-  doc.text(`Date: ${new Date().toLocaleDateString()}`);
-
-  // Add a table header for items
-  doc.moveDown();
+  doc.moveDown(4);
   doc
+    .font("Heading Font")
+    .fontSize(28)
+    .text("Quotation", { align: "center", lineGap: 10 });
+  doc.moveDown(0.5);
+
+  doc.fontSize(12);
+  doc
+    .font("Headlines Font")
+    .text("Client:", { continued: true })
+    .font("Text Font")
+    .text(`  ${project.customerName || "N/A"}`);
+  doc.moveDown(0.2);
+  doc
+    .font("Headlines Font")
+    .text("Address:", { continued: true })
+    .font("Text Font")
+    .text(`  ${project.customerAddress || "N/A"}`);
+  doc.moveDown(0.2);
+  doc
+    .font("Headlines Font")
+    .text("Contact Info:", { continued: true })
+    .font("Text Font")
+    .text(`  ${project.customerPhoneNumber || "N/A"}`);
+  doc.moveDown(0.2);
+  doc
+    .font("Headlines Font")
+    .text("Date:", { continued: true })
+    .font("Text Font")
+    .text(`  ${new Date().toLocaleDateString()}`);
+  doc.moveDown(2);
+  // Add a table header for items
+
+  doc
+    .font("Headlines Font")
     .fontSize(14)
-    .text("Item", { continued: true })
-    .text("Description", { align: "right" });
+    .text("Item", { align: "left", underline: true, continued: true });
+  doc
+    .font("Headlines Font")
+    .text("Description", { align: "right", underline: true });
+  doc.moveDown(0.5);
 
   // Extract all item categories from the quote and add them to the document
   const categories = [
@@ -60,7 +95,7 @@ export default async function handler(req, res) {
   ];
 
   categories.forEach((category) => {
-    category.items.forEach((item) => {
+    category.items.forEach((item, index) => {
       const itemDescription = `${item.quantity || ""} ${item.material || ""} ${
         item.color ? item.color + "," : ""
       } ${
@@ -73,34 +108,51 @@ export default async function handler(req, res) {
           : ""
       }`;
       doc
+        .font("Headlines Font")
         .fontSize(12)
         .text(category.name, { continued: true })
+        .font("Text Font")
         .text(itemDescription, { align: "right" });
+      // Add minimal spacing after each line
+      doc.moveDown(0.2); // Smaller spacing between items
     });
   });
 
   // Add quote and total price
   const totalPrice = Math.round(
-    quote?.price * (1 + 0.12 + (project?.priority === "High" ? 0.1 : 0))
+    quote?.price * (1 + 0.12 + (project?.priority === "High" ? 0.1 : 0)) +
+      markup
   ).toFixed(2);
-  doc.moveDown();
+  doc.moveDown(2);
   doc
+    .font("Headlines Font")
     .fontSize(12)
     .text("QUOTE PRICE:", { continued: true })
+    .font("Text Font")
     .text(`$${quote?.price || 0}`, { align: "right" });
+  doc.moveDown(0.3);
+
   const taxes = totalPrice - quote?.price;
   doc
+    .font("Headlines Font")
     .text("*PLUS APPLICABLE TAXES*", { continued: true })
+    .font("Text Font")
     .text(`$${taxes}`, { align: "right" });
+  doc.moveDown(0.3);
 
-  // doc
-  //   .text("TOTAL PRICE:", { continued: true })
-  //   .text(totalPrice, { align: "right" });
+  doc
+    .font("Headlines Font")
+    .text("TOTAL PRICE:", { continued: true })
+    .font("Text Font")
+    .text(`$${totalPrice}`, { align: "right" });
+  doc.moveDown(2);
 
   // Add note section
   doc.moveDown();
-  doc.text("Note:", { underline: true });
-  doc.text(project.description);
+  doc.font("Headlines Font").text("Note:", { underline: true });
+  doc.moveDown(0.2);
+
+  doc.font("Text Font").text(project.description);
 
   // Finalize the PDF and end the stream
   doc.end();

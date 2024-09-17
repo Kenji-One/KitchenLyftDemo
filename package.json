@@ -42,7 +42,8 @@
     "slick-carousel": "^1.8.1",
     "socket.io": "^4.7.5",
     "socket.io-client": "^4.7.5",
-    "stripe": "^16.8.0"
+    "stripe": "^16.8.0",
+    "svg-to-pdfkit": "^0.1.8"
   },
   "devDependencies": {
     "eslint": "^8",

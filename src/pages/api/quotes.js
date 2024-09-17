@@ -59,7 +59,7 @@ const handler = async (req, res) => {
         const { quoteId, ...updateData } = req.body;
 
         const quote = await Quote.findById(quoteId);
-        if (!existingQuote) {
+        if (!quote) {
           return res.status(404).json({ message: "Quote not found" });
         }
 

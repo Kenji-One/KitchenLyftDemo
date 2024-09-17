@@ -675,7 +675,11 @@ const GenerateQuoteForm = ({
 
     if (response.ok) {
       setLoading(false);
-      setSuccessMessage("Quote generated successfully!");
+      setSuccessMessage(
+        quoteDetails?._id
+          ? "Quote updated successfully!"
+          : "Quote generated successfully!"
+      );
 
       setTimeout(() => {
         setSuccessMessage("");
