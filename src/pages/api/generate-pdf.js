@@ -6,6 +6,18 @@ import SVGtoPDF from "svg-to-pdfkit";
 export default async function handler(req, res) {
   const { project, quote, markup } = req.body;
 
+  // Define sales tax rates for each location
+  const taxRates = {
+    Montreal: 0.14975, // 14.975%
+    Miami: 0.07, // 7%
+    "New York": 0.08875, // 8.875%
+    "New Jersey": 0.06625, // 6.625%
+    Toronto: 0.13, // 13%
+  };
+
+  // Get the sales tax rate for the project location
+  const locationTaxRate = taxRates[project.location] || 0; // Default to 0 if no match
+
   // Create a new PDF document
   const doc = new PDFDocument({ margin: 50 });
   // Use absolute paths for font files
@@ -140,17 +152,21 @@ export default async function handler(req, res) {
   });
 
   // Add quote and total price
-  const totalPrice = Math.round(
+  const totalPrice =
     quote?.price * (1 + 0.12 + (project?.priority === "High" ? 0.1 : 0)) +
-      markup
-  ).toFixed(2);
+    markup;
+  const roundedTotalPrice = Math.round(totalPrice); // Round to nearest integer
+  const salesTax = roundedTotalPrice * locationTaxRate;
+  const roundedSalesTax = Math.round(salesTax); // Round to nearest integer
+  const totalWithTax = roundedTotalPrice + roundedSalesTax;
+
   doc.moveDown(2);
   doc
     .font("Headlines Font")
     .fontSize(12)
     .text("QUOTE PRICE:", { continued: true })
     .font("Text Font")
-    .text(`$${quote?.price || 0}`, { align: "right" });
+    .text(`$${roundedTotalPrice}`, { align: "right" });
   doc.moveDown(0.3);
 
   const taxes = totalPrice - quote?.price;
@@ -158,14 +174,16 @@ export default async function handler(req, res) {
     .font("Headlines Font")
     .text("*PLUS APPLICABLE TAXES*", { continued: true })
     .font("Text Font")
-    .text(`$${taxes}`, { align: "right" });
+    .text(`$${roundedSalesTax}`, { align: "right" });
   doc.moveDown(0.3);
 
   doc
     .font("Headlines Font")
     .text("TOTAL PRICE:", { continued: true })
     .font("Text Font")
-    .text(`$${totalPrice}`, { align: "right" });
+    .text(`$${totalWithTax}`, {
+      align: "right",
+    });
   doc.moveDown(2);
 
   // Add note section
