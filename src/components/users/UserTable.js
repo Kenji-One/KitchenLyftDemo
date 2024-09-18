@@ -257,12 +257,20 @@ const UserTable = ({ users, handleRemoveUser, handleAddUser, session2 }) => {
                 Select Role
               </MenuItem>
               {session2.user.role === "CorporateAdmin" ? (
-                <>
-                  <MenuItem value="CorporateAdmin">Corporate Admin</MenuItem>
-                  <MenuItem value="CorporateUser">Corporate User</MenuItem>
-                  <MenuItem value="FranchiseAdmin">Franchise Admin</MenuItem>
-                  <MenuItem value="FranchiseUser">Franchise User</MenuItem>
-                </>
+                [
+                  <MenuItem key="CorporateAdmin" value="CorporateAdmin">
+                    Corporate Admin
+                  </MenuItem>,
+                  <MenuItem key="CorporateUser" value="CorporateUser">
+                    Corporate User
+                  </MenuItem>,
+                  <MenuItem key="FranchiseAdmin" value="FranchiseAdmin">
+                    Franchise Admin
+                  </MenuItem>,
+                  <MenuItem key="FranchiseUser" value="FranchiseUser">
+                    Franchise User
+                  </MenuItem>,
+                ]
               ) : (
                 // Other roles should only see "FranchiseUser"
                 <MenuItem value="FranchiseUser">Franchise User</MenuItem>
