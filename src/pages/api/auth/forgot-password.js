@@ -25,7 +25,7 @@ export default async function handler(req, res) {
   user.resetPasswordExpires = Date.now() + 3600000; // 1 hour from now
   await user.save();
 
-  const resetUrl = `http://localhost:3000/reset-password?token=${token}`;
+  const resetUrl = `https://kitchen-lyft-demo-gamma.vercel.app/reset-password?token=${token}`;
   await sendRecoveryEmail(user.email, resetUrl);
 
   res.status(200).json({
