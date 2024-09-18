@@ -256,14 +256,17 @@ const UserTable = ({ users, handleRemoveUser, handleAddUser, session2 }) => {
               <MenuItem disabled value="">
                 Select Role
               </MenuItem>
-              {session2.user.role == "CorporateAdmin" && (
+              {session2.user.role === "CorporateAdmin" ? (
                 <>
                   <MenuItem value="CorporateAdmin">Corporate Admin</MenuItem>
                   <MenuItem value="CorporateUser">Corporate User</MenuItem>
                   <MenuItem value="FranchiseAdmin">Franchise Admin</MenuItem>
+                  <MenuItem value="FranchiseUser">Franchise User</MenuItem>
                 </>
+              ) : (
+                // Other roles should only see "FranchiseUser"
+                <MenuItem value="FranchiseUser">Franchise User</MenuItem>
               )}
-              <MenuItem value="FranchiseUser">Franchise User</MenuItem>
             </Select>
           </FormControl>
         </DialogContent>
