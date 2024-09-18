@@ -2,14 +2,35 @@ import PDFDocument from "pdfkit";
 import path from "path";
 import fs from "fs";
 import SVGtoPDF from "svg-to-pdfkit";
+
 export default async function handler(req, res) {
   const { project, quote, markup } = req.body;
 
   // Create a new PDF document
   const doc = new PDFDocument({ margin: 50 });
-  doc.registerFont("Heading Font", "public/fonts/PaytoneOne-Regular.ttf");
-  doc.registerFont("Headlines Font", "public/fonts/Lato-Bold.ttf");
-  doc.registerFont("Text Font", "public/fonts/Lato-Regular.ttf");
+  // Use absolute paths for font files
+  const paytoneFontPath = path.join(
+    process.cwd(),
+    "public",
+    "fonts",
+    "PaytoneOne-Regular.ttf"
+  );
+  const latoBoldFontPath = path.join(
+    process.cwd(),
+    "public",
+    "fonts",
+    "Lato-Bold.ttf"
+  );
+  const latoRegularFontPath = path.join(
+    process.cwd(),
+    "public",
+    "fonts",
+    "Lato-Regular.ttf"
+  );
+
+  doc.registerFont("Heading Font", paytoneFontPath);
+  doc.registerFont("Headlines Font", latoBoldFontPath);
+  doc.registerFont("Text Font", latoRegularFontPath);
   let buffers = [];
   doc.on("data", buffers.push.bind(buffers));
   doc.on("end", () => {
