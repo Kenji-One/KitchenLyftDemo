@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
-import { useRouter } from "next/navigation";
+import { useRouter } from "next/router";
 import {
   AppBar,
   Toolbar,
@@ -49,11 +49,17 @@ import ChatsList from "@/components/messages/ChatsList";
 import MenuIcon from "@mui/icons-material/Menu";
 import ForumIcon from "@mui/icons-material/Forum";
 
-const Dashboard = ({ session2, ably }) => {
+const Dashboard = ({
+  session2,
+  ably,
+  projects: initialProjects,
+  orders: initialOrders,
+}) => {
   const router = useRouter();
+  const queryProjectId = router.query?.projectId;
   const [value, setValue] = useState(0);
-  const [projects, setProjects] = useState([]);
-  const [orders, setOrders] = useState([]);
+  const [projects, setProjects] = useState(initialProjects || []);
+  const [orders, setOrders] = useState(initialOrders || []);
   const [users, setUsers] = useState([]);
   const [selectedProject, setSelectedProject] = useState(null);
   const [thereIsClickForQoute, setThereIsClickForQoute] = useState(false);
@@ -67,7 +73,11 @@ const Dashboard = ({ session2, ably }) => {
   const [mobileMoreAnchorEl, setMobileMoreAnchorEl] = useState(null);
   const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
   const isMobileMenuOpen = Boolean(mobileMoreAnchorEl);
-
+  useEffect(() => {
+    if (queryProjectId) {
+      handleProjectClick(queryProjectId);
+    }
+  }, [queryProjectId]);
   const selectedChatRef = useRef(selectedChat);
   useEffect(() => {
     selectedChatRef.current = selectedChat;
@@ -314,56 +324,56 @@ const Dashboard = ({ session2, ably }) => {
     router.push("/login");
   };
 
-  useEffect(() => {
-    const fetchProjects = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch("/api/projects");
-        const projects = await response.json();
+  // useEffect(() => {
+  //   const fetchProjects = async () => {
+  //     try {
+  //       setLoading(true);
+  //       const response = await fetch("/api/projects");
+  //       const projects = await response.json();
 
-        const projectQuotes = await Promise.all(
-          projects.map(async (project) => {
-            try {
-              const response = await fetch(
-                `/api/quotes?projectId=${project._id}`
-              );
-              const quote = await response.json();
-              return { ...project, quote: quote.price };
-            } catch (error) {
-              console.error(
-                `Failed to fetch quote for project ${project._id}`,
-                error
-              );
-              return { ...project, quote: "N/A" }; // or handle as needed
-            }
-          })
-        );
-        setProjects(projectQuotes);
-        setLoading(false);
-      } catch (error) {
-        console.error("Failed to fetch projects", error);
-        setLoading(false);
-      }
-    };
-    fetchProjects();
-  }, []);
+  //       const projectQuotes = await Promise.all(
+  //         projects.map(async (project) => {
+  //           try {
+  //             const response = await fetch(
+  //               `/api/quotes?projectId=${project._id}`
+  //             );
+  //             const quote = await response.json();
+  //             return { ...project, quote: quote.price };
+  //           } catch (error) {
+  //             console.error(
+  //               `Failed to fetch quote for project ${project._id}`,
+  //               error
+  //             );
+  //             return { ...project, quote: "N/A" }; // or handle as needed
+  //           }
+  //         })
+  //       );
+  //       setProjects(projectQuotes);
+  //       setLoading(false);
+  //     } catch (error) {
+  //       console.error("Failed to fetch projects", error);
+  //       setLoading(false);
+  //     }
+  //   };
+  //   fetchProjects();
+  // }, []);
 
   // Fetch Orders
-  useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch("/api/orders");
-        const data = await response.json();
-        setOrders(data);
-        setLoading(false);
-      } catch (error) {
-        console.error("Failed to fetch orders", error);
-        setLoading(false);
-      }
-    };
-    fetchOrders();
-  }, []);
+  // useEffect(() => {
+  //   const fetchOrders = async () => {
+  //     try {
+  //       setLoading(true);
+  //       const response = await fetch("/api/orders");
+  //       const data = await response.json();
+  //       setOrders(data);
+  //       setLoading(false);
+  //     } catch (error) {
+  //       console.error("Failed to fetch orders", error);
+  //       setLoading(false);
+  //     }
+  //   };
+  //   fetchOrders();
+  // }, []);
 
   useEffect(() => {
     if (
@@ -950,7 +960,7 @@ const Dashboard = ({ session2, ably }) => {
                     minHeight:
                       selectedProject || thereIsClickForQoute || value !== 0
                         ? "unset"
-                        : "calc(100vh - 72px) !important",
+                        : "calc(100vh - 73px) !important",
                     display: "grid",
                     gridTemplateColumns: {
                       xs: "unset",
@@ -1234,9 +1244,35 @@ export const getServerSideProps = async (context) => {
       },
     };
   }
+  // Fetch projects and quotes on the server side
+  let projects = [];
+  let orders = [];
+  try {
+    const projectsResponse = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/projects-with-quotes`,
+      {
+        headers: {
+          Cookie: context.req.headers.cookie,
+        },
+      }
+    );
+    projects = await projectsResponse.json();
 
+    // Fetch orders on the server side
+    const ordersResponse = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/api/orders`,
+      {
+        headers: {
+          Cookie: context.req.headers.cookie,
+        },
+      }
+    );
+    orders = await ordersResponse.json();
+  } catch (error) {
+    console.error("Error fetching projects and quotes server-side:", error);
+  }
   return {
-    props: { session2 },
+    props: { session2, projects, orders },
   };
 };
 

@@ -26,7 +26,7 @@ const ProjectTable = ({
         sx={{
           borderTop: 1,
           borderColor: "#3237401A",
-          minWidth: "1000px",
+          minWidth: "1300px",
         }}
       >
         <TableHead>

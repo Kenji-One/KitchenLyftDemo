@@ -113,7 +113,7 @@ const ProjectDetails = ({
       sx={{
         display: "grid",
         gridTemplateColumns: { xs: "unset", md2: "3.7fr 1.44fr" },
-        height: quote ? "100%" : "calc(100vh - 72px) !important",
+        height: quote ? "100%" : "calc(100vh - 73px) !important",
       }}
     >
       <Box

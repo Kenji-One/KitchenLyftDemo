@@ -85,8 +85,11 @@ const CreateProject = ({ session2 }) => {
     });
 
     if (response.ok) {
+      const newProject = await response.json(); // Assuming the API returns the created project
+      const newProjectId = newProject._id;
+
       setLoading(false);
-      router.push("/");
+      router.push(`/?projectId=${newProjectId}`);
     } else {
       console.error("Failed to create project");
       setLoading(false);
